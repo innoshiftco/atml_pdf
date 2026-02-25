@@ -6,16 +6,12 @@ defmodule AtmlPdf.Element.Document do
   attributes that cascade to all descendants.
   """
 
-  @typedoc "A dimension value — fixed pt/px, percentage, `fill`, or `fit`."
-  @type dimension :: {:pt, number()} | {:px, number()} | {:percent, number()} | :fill | :fit
-
-  @typedoc "A spacing quad: {top, right, bottom, left} in pt."
-  @type spacing :: {number(), number(), number(), number()}
+  alias AtmlPdf.Element.Types
 
   @type t :: %__MODULE__{
-          width: dimension(),
-          height: dimension(),
-          padding: spacing(),
+          width: Types.dimension(),
+          height: Types.dimension(),
+          padding: Types.spacing(),
           font_family: String.t(),
           font_size: number(),
           font_weight: :normal | :bold,

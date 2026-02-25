@@ -16,17 +16,16 @@ defmodule AtmlPdf.Element.Img do
   - If both are `fit`, the image renders at its intrinsic size.
   """
 
-  @typedoc "A dimension value — fixed pt/px, percentage, `fill`, or `fit`."
-  @type dimension :: {:pt, number()} | {:px, number()} | {:percent, number()} | :fill | :fit
+  alias AtmlPdf.Element.Types
 
   @type t :: %__MODULE__{
           src: String.t(),
-          width: dimension(),
-          height: dimension(),
-          min_width: dimension() | nil,
-          max_width: dimension() | nil,
-          min_height: dimension() | nil,
-          max_height: dimension() | nil
+          width: Types.dimension(),
+          height: Types.dimension(),
+          min_width: Types.dimension() | nil,
+          max_width: Types.dimension() | nil,
+          min_height: Types.dimension() | nil,
+          max_height: Types.dimension() | nil
         }
 
   defstruct src: nil,

@@ -177,13 +177,24 @@ defmodule AtmlPdf.Parser do
   # Returns {:ok, [element | text_string]} for the children of a node.
   # `parent_tag` is :document | :row | :col to enforce nesting rules.
   defp build_children(children, parent_tag, _parent_struct) do
-    Enum.reduce_while(children, {:ok, []}, fn child, {:ok, acc} ->
+    children
+    |> Enum.reduce_while({:ok, []}, fn child, {:ok, acc} ->
       case build_child(child, parent_tag) do
-        {:ok, nil} -> {:cont, {:ok, acc}}
-        {:ok, built} -> {:cont, {:ok, acc ++ [built]}}
-        {:error, _} = err -> {:halt, err}
+        {:ok, nil} ->
+          {:cont, {:ok, acc}}
+
+        {:ok, built} ->
+          # Prepend for O(n) accumulation; reverse once at the end.
+          {:cont, {:ok, [built | acc]}}
+
+        {:error, _} = err ->
+          {:halt, err}
       end
     end)
+    |> case do
+      {:ok, acc} -> {:ok, Enum.reverse(acc)}
+      other -> other
+    end
   end
 
   # Whitespace-only text nodes are silently dropped.

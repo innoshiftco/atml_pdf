@@ -6,30 +6,21 @@ defmodule AtmlPdf.Element.Row do
   right. Rows stack vertically within their parent (`<document>` or `<col>`).
   """
 
-  @typedoc "A dimension value — fixed pt/px, percentage, `fill`, or `fit`."
-  @type dimension :: {:pt, number()} | {:px, number()} | {:percent, number()} | :fill | :fit
-
-  @typedoc "A spacing quad: {top, right, bottom, left} in pt."
-  @type spacing :: {number(), number(), number(), number()}
-
-  @typedoc "A border value — either `:none` or a style/width/color triple."
-  @type border ::
-          :none
-          | {:border, style :: :solid | :dashed | :dotted, width :: number(), color :: String.t()}
+  alias AtmlPdf.Element.Types
 
   @type t :: %__MODULE__{
-          height: dimension(),
-          min_height: dimension() | nil,
-          max_height: dimension() | nil,
-          width: dimension(),
+          height: Types.dimension(),
+          min_height: Types.dimension() | nil,
+          max_height: Types.dimension() | nil,
+          width: Types.dimension(),
           padding_top: number(),
           padding_right: number(),
           padding_bottom: number(),
           padding_left: number(),
-          border_top: border(),
-          border_right: border(),
-          border_bottom: border(),
-          border_left: border(),
+          border_top: Types.border(),
+          border_right: Types.border(),
+          border_bottom: Types.border(),
+          border_left: Types.border(),
           vertical_align: :top | :center | :bottom,
           children: list()
         }

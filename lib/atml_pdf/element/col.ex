@@ -7,27 +7,21 @@ defmodule AtmlPdf.Element.Col do
   elements. Mixed content (text alongside child elements) is permitted.
   """
 
-  @typedoc "A dimension value — fixed pt/px, percentage, `fill`, or `fit`."
-  @type dimension :: {:pt, number()} | {:px, number()} | {:percent, number()} | :fill | :fit
-
-  @typedoc "A border value — either `:none` or a style/width/color triple."
-  @type border ::
-          :none
-          | {:border, style :: :solid | :dashed | :dotted, width :: number(), color :: String.t()}
+  alias AtmlPdf.Element.Types
 
   @type t :: %__MODULE__{
-          width: dimension(),
-          min_width: dimension() | nil,
-          max_width: dimension() | nil,
-          height: dimension(),
+          width: Types.dimension(),
+          min_width: Types.dimension() | nil,
+          max_width: Types.dimension() | nil,
+          height: Types.dimension(),
           padding_top: number(),
           padding_right: number(),
           padding_bottom: number(),
           padding_left: number(),
-          border_top: border(),
-          border_right: border(),
-          border_bottom: border(),
-          border_left: border(),
+          border_top: Types.border(),
+          border_right: Types.border(),
+          border_bottom: Types.border(),
+          border_left: Types.border(),
           font_family: String.t() | nil,
           font_size: number() | nil,
           font_weight: :normal | :bold | nil,
