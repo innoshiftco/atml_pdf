@@ -14,6 +14,15 @@ defmodule AtmlPdf.RendererTest do
     resolved
   end
 
+  # Minimal 1×1 white pixel PNG — valid for Pdf.add_image without disk fixture.
+  @tiny_png <<137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0,
+              1, 8, 2, 0, 0, 0, 144, 119, 83, 222, 0, 0, 0, 12, 73, 68, 65, 84, 8, 215, 99, 248,
+              207, 192, 0, 0, 0, 2, 0, 1, 226, 33, 188, 51, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66,
+              96, 130>>
+
+  defp tiny_png_b64, do: Base.encode64(@tiny_png)
+  defp tiny_png_data_uri, do: "data:image/png;base64,#{tiny_png_b64()}"
+
   # ---------------------------------------------------------------------------
   # render/2 — smoke tests
   # ---------------------------------------------------------------------------
@@ -225,6 +234,83 @@ defmodule AtmlPdf.RendererTest do
       Pdf.cleanup(pid)
       assert is_binary(binary)
       assert byte_size(binary) > 0
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # <img> with data URI src (data:image/png;base64,...)
+  # ---------------------------------------------------------------------------
+
+  describe "render/2 with data URI image src" do
+    test "renders a document with a data URI png image" do
+      src = tiny_png_data_uri()
+
+      xml = """
+      <document width="200pt" height="150pt">
+        <row height="80pt">
+          <col width="fill" vertical-align="center" text-align="center" padding="4pt">
+            <img src="#{src}" width="60pt" height="60pt" />
+          </col>
+        </row>
+      </document>
+      """
+
+      doc = resolve!(xml)
+      assert {:ok, pid} = Renderer.render(doc)
+      binary = Pdf.export(pid)
+      Pdf.cleanup(pid)
+      assert binary =~ "%PDF-"
+    end
+
+    test "renders a document mixing data URI image and legacy base64: image" do
+      data_uri_src = tiny_png_data_uri()
+      legacy_src = "base64:#{tiny_png_b64()}"
+
+      xml = """
+      <document width="200pt" height="200pt">
+        <row height="80pt">
+          <col width="fill" padding="4pt">
+            <img src="#{data_uri_src}" width="60pt" height="60pt" />
+          </col>
+        </row>
+        <row height="80pt">
+          <col width="fill" padding="4pt">
+            <img src="#{legacy_src}" width="60pt" height="60pt" />
+          </col>
+        </row>
+      </document>
+      """
+
+      doc = resolve!(xml)
+      assert {:ok, pid} = Renderer.render(doc)
+      binary = Pdf.export(pid)
+      Pdf.cleanup(pid)
+      assert byte_size(binary) > 0
+    end
+
+    test "data URI with image/jpeg mime type does not crash" do
+      # Use a PNG body but declare image/jpeg — exercises the mime→ext path.
+      jpeg_data_uri = "data:image/jpeg;base64,#{tiny_png_b64()}"
+
+      xml = """
+      <document width="200pt" height="100pt">
+        <row height="80pt">
+          <col width="fill" padding="4pt">
+            <img src="#{jpeg_data_uri}" width="60pt" height="60pt" />
+          </col>
+        </row>
+      </document>
+      """
+
+      doc = resolve!(xml)
+      # Rendering itself must not raise regardless of whether the pdf lib
+      # can decode the mismatched bytes.
+      result = Renderer.render(doc)
+      assert match?({:ok, _}, result) or match?({:error, _}, result)
+
+      if match?({:ok, _}, result) do
+        Pdf.cleanup(elem(result, 1))
+      end
     end
   end
 end

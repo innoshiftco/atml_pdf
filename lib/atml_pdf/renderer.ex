@@ -246,14 +246,36 @@ defmodule AtmlPdf.Renderer do
         height: img.height
       )
 
-      if String.starts_with?(img.src, "base64:") do
+      if inline_image_src?(img.src) do
         File.rm(image_path)
       end
     end
   end
 
   # Resolve src to a file path the pdf library can open.
-  # base64-encoded images are written to a temp file.
+  # Both the legacy "base64:<data>" prefix and the standard data URI format
+  # "data:<mime>;base64,<data>" are supported.  In either case the decoded bytes
+  # are written to a temp file so the `pdf` library can open them by path.
+
+  # Standard data URI: data:image/png;base64,<data>
+  # The MIME type is used to derive the temp-file extension so the pdf library
+  # picks the correct decoder.
+  defp resolve_image_path("data:" <> rest) do
+    {mime, encoded} =
+      case String.split(rest, ";base64,", parts: 2) do
+        [mime, data] -> {mime, data}
+        # Malformed data URI — treat remainder as raw base64, assume PNG
+        _ -> {"image/png", rest}
+      end
+
+    ext = mime_to_ext(mime)
+    decoded = Base.decode64!(String.trim(encoded))
+    path = Path.join(System.tmp_dir!(), "atml_img_#{:erlang.unique_integer([:positive])}.#{ext}")
+    File.write!(path, decoded)
+    path
+  end
+
+  # Legacy "base64:<data>" prefix (kept for backward compatibility).
   defp resolve_image_path("base64:" <> encoded) do
     decoded = Base.decode64!(String.trim(encoded))
     path = Path.join(System.tmp_dir!(), "atml_img_#{:erlang.unique_integer([:positive])}.png")
@@ -262,6 +284,18 @@ defmodule AtmlPdf.Renderer do
   end
 
   defp resolve_image_path(path), do: path
+
+  defp mime_to_ext("image/png"), do: "png"
+  defp mime_to_ext("image/jpeg"), do: "jpg"
+  defp mime_to_ext("image/jpg"), do: "jpg"
+  defp mime_to_ext("image/gif"), do: "gif"
+  defp mime_to_ext("image/webp"), do: "webp"
+  defp mime_to_ext(_), do: "png"
+
+  # Returns true for any src that was decoded to a temp file and needs cleanup.
+  defp inline_image_src?("data:" <> _), do: true
+  defp inline_image_src?("base64:" <> _), do: true
+  defp inline_image_src?(_), do: false
 
   # ---------------------------------------------------------------------------
   # Border rendering
