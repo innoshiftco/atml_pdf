@@ -14,8 +14,11 @@ defmodule AtmlPdf.Layout do
      - `pt` / `px` values are converted to points (`1px = 0.75pt`).
      - `%` is resolved relative to the parent's computed dimension on the same
        axis.
-     - `fit` dimensions are computed from content: character-height estimates for
-       text nodes and intrinsic size (defaulting to `0`) for images.
+      - `fit` dimensions are computed from content: character-height/width
+        estimates for text nodes and intrinsic size for images. For a `<col>`
+        with `width: fit`, the natural width is the widest content piece
+        (longest text line × avg char width, or image width); for a `<row>`
+        with `height: fit`, the natural height is the tallest column estimate.
      - `fill` siblings share the remaining space equally after all fixed and `fit`
        siblings are resolved.
 
@@ -96,6 +99,10 @@ defmodule AtmlPdf.Layout do
     e -> {:error, "Layout error: #{Exception.message(e)}"}
   end
 
+  def resolve(other) do
+    {:error, "Layout error: expected a %Document{}, got: #{inspect(other)}"}
+  end
+
   # ---------------------------------------------------------------------------
   # Row resolution
   # ---------------------------------------------------------------------------
@@ -105,16 +112,17 @@ defmodule AtmlPdf.Layout do
   defp resolve_rows(rows, parent_width, parent_height, font_ctx) do
     # First pass: resolve heights for all non-fill rows.
     # `fill` rows share what's left after the fixed/fit rows consume their space.
-    {resolved, fill_count, used_height} =
+    # Build `acc` with prepends (O(1) each) then reverse once at the end (O(n)).
+    {reversed, fill_count, used_height} =
       Enum.reduce(rows, {[], 0, 0.0}, fn row, {acc, fills, used} ->
         case row do
           %Row{height: :fill} ->
-            {acc ++ [{:fill_placeholder, row}], fills + 1, used}
+            {[{:fill_placeholder, row} | acc], fills + 1, used}
 
           %Row{} ->
             h = resolve_row_height(row, parent_width, parent_height, font_ctx)
             h_clamped = clamp(h, row.min_height, row.max_height, parent_height)
-            {acc ++ [{:resolved_height, h_clamped, row}], fills, used + h_clamped}
+            {[{:resolved_height, h_clamped, row} | acc], fills, used + h_clamped}
         end
       end)
 
@@ -125,7 +133,9 @@ defmodule AtmlPdf.Layout do
         0.0
       end
 
-    Enum.map(resolved, fn
+    reversed
+    |> Enum.reverse()
+    |> Enum.map(fn
       {:fill_placeholder, row} ->
         h = clamp(fill_height, row.min_height, row.max_height, parent_height)
         resolve_row_fully(row, parent_width, h, font_ctx)
@@ -206,16 +216,17 @@ defmodule AtmlPdf.Layout do
   # Resolves a list of cols laid out horizontally within a row of
   # `row_width` × `row_height`.
   defp resolve_cols(cols, row_width, row_height, font_ctx) do
-    {resolved, fill_count, used_width} =
+    # Build `acc` with prepends (O(1) each) then reverse once at the end (O(n)).
+    {reversed, fill_count, used_width} =
       Enum.reduce(cols, {[], 0, 0.0}, fn col, {acc, fills, used} ->
         case col do
           %Col{width: :fill} ->
-            {acc ++ [{:fill_placeholder, col}], fills + 1, used}
+            {[{:fill_placeholder, col} | acc], fills + 1, used}
 
           %Col{} ->
             w = resolve_col_width(col, row_width, font_ctx)
             w_clamped = clamp(w, col.min_width, col.max_width, row_width)
-            {acc ++ [{:resolved_width, w_clamped, col}], fills, used + w_clamped}
+            {[{:resolved_width, w_clamped, col} | acc], fills, used + w_clamped}
         end
       end)
 
@@ -226,7 +237,9 @@ defmodule AtmlPdf.Layout do
         0.0
       end
 
-    Enum.map(resolved, fn
+    reversed
+    |> Enum.reverse()
+    |> Enum.map(fn
       {:fill_placeholder, col} ->
         w = clamp(fill_width, col.min_width, col.max_width, row_width)
         resolve_col_fully(col, w, row_height, font_ctx)
@@ -237,13 +250,53 @@ defmodule AtmlPdf.Layout do
   end
 
   # Computes the natural (non-fill) width of a col.
-  defp resolve_col_width(%Col{width: :fit}, row_width, _font_ctx) do
-    # fit width: fall back to full row width (content width is hard to measure)
-    row_width
+  defp resolve_col_width(%Col{width: :fit} = col, row_width, font_ctx) do
+    # fit: derive from content width, clamped to min/max, bounded by row_width.
+    natural_col_width(col, font_ctx)
+    |> clamp(col.min_width, col.max_width, row_width)
   end
 
   defp resolve_col_width(%Col{width: w}, row_width, _font_ctx) do
     resolve_dim(w, row_width, row_width)
+  end
+
+  # Estimates the natural content width of a col for :fit calculations.
+  # Mirrors the heuristic used in col_content_height/3 for the width axis.
+  defp natural_col_width(%Col{} = col, font_ctx) do
+    resolved_font_ctx = merge_font_ctx(font_ctx, col)
+    fs = resolved_font_ctx.font_size
+    avg_char_width = fs * 0.5
+
+    padding_h = col.padding_left + col.padding_right
+
+    content_w =
+      col.children
+      |> Enum.map(fn
+        text when is_binary(text) ->
+          text
+          |> String.split("\n")
+          |> Enum.map(fn line -> String.length(String.trim(line)) end)
+          |> Enum.max(fn -> 0 end)
+          |> Kernel.*(avg_char_width)
+
+        %Row{} = nested_row ->
+          # A nested row's natural width is the sum of its cols' natural widths.
+          nested_row.children
+          |> Enum.map(fn col -> natural_col_width(col, resolved_font_ctx) end)
+          |> Enum.sum()
+
+        %Img{width: :fit} ->
+          0.0
+
+        %Img{width: :fill} ->
+          0.0
+
+        %Img{width: img_w} ->
+          resolve_dim(img_w, 0.0, 0.0)
+      end)
+      |> Enum.max(fn -> 0.0 end)
+
+    content_w + padding_h
   end
 
   # Fully resolves a col: dimensions to pt, font inheritance, recurse into children.

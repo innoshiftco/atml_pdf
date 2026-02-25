@@ -649,5 +649,116 @@ defmodule AtmlPdf.LayoutTest do
     test "resolve/1 returns error tuple for non-Document input" do
       assert {:error, _} = Layout.resolve(%Document{width: nil, height: nil})
     end
+
+    test "resolve/1 returns a specific error for a plain map" do
+      assert {:error, reason} = Layout.resolve(%{width: 100, height: 200})
+      assert reason =~ "expected a %Document{}"
+    end
+
+    test "resolve/1 returns a specific error for nil" do
+      assert {:error, reason} = Layout.resolve(nil)
+      assert reason =~ "expected a %Document{}"
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # resolve/1 – fit col width
+  # ---------------------------------------------------------------------------
+
+  describe "resolve/1 – fit col width" do
+    test "fit col width is non-negative" do
+      doc =
+        resolve!("""
+        <document width="200pt" height="100pt">
+          <row height="50pt">
+            <col width="fit">hello</col>
+          </row>
+        </document>
+        """)
+
+      [%Row{children: [col]}] = doc.children
+      assert col.width >= 0.0
+    end
+
+    test "fit col width is content-based (wider text → wider col)" do
+      short_doc =
+        resolve!("""
+        <document width="400pt" height="100pt" font-size="10pt">
+          <row height="50pt">
+            <col width="fit">hi</col>
+          </row>
+        </document>
+        """)
+
+      long_doc =
+        resolve!("""
+        <document width="400pt" height="100pt" font-size="10pt">
+          <row height="50pt">
+            <col width="fit">a much longer piece of text here</col>
+          </row>
+        </document>
+        """)
+
+      [%Row{children: [short_col]}] = short_doc.children
+      [%Row{children: [long_col]}] = long_doc.children
+      assert long_col.width > short_col.width
+    end
+
+    test "fit col width is a float after resolution" do
+      doc =
+        resolve!("""
+        <document width="200pt" height="100pt">
+          <row height="50pt">
+            <col width="fit">some text</col>
+          </row>
+        </document>
+        """)
+
+      [%Row{children: [col]}] = doc.children
+      assert is_float(col.width)
+    end
+
+    test "fit col width respects max-width constraint" do
+      doc =
+        resolve!("""
+        <document width="400pt" height="100pt" font-size="10pt">
+          <row height="50pt">
+            <col width="fit" max-width="20pt">a very long line of text that would otherwise be wide</col>
+          </row>
+        </document>
+        """)
+
+      [%Row{children: [col]}] = doc.children
+      assert col.width <= 20.0
+    end
+
+    test "fit col width respects min-width constraint" do
+      doc =
+        resolve!("""
+        <document width="400pt" height="100pt" font-size="10pt">
+          <row height="50pt">
+            <col width="fit" min-width="100pt">x</col>
+          </row>
+        </document>
+        """)
+
+      [%Row{children: [col]}] = doc.children
+      assert col.width >= 100.0
+    end
+
+    test "min/max cleared to nil after fit col resolution" do
+      doc =
+        resolve!("""
+        <document width="400pt" height="100pt">
+          <row height="50pt">
+            <col width="fit" min-width="10pt" max-width="200pt">text</col>
+          </row>
+        </document>
+        """)
+
+      [%Row{children: [col]}] = doc.children
+      assert col.min_width == nil
+      assert col.max_width == nil
+    end
   end
 end
