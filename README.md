@@ -13,6 +13,10 @@ ATML XML string
   → AtmlPdf.Renderer  (element tree → PDF via the pdf library)
 ```
 
+## Demo
+
+![Shipping label rendered by atml_pdf](docs/img/demo.jpg)
+
 ## Installation
 
 Add `atml_pdf` to your dependencies in `mix.exs`:
