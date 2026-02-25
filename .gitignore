@@ -23,3 +23,4 @@ atml_pdf-*.tar
 /tmp/
 
 .expert/
+.beads/

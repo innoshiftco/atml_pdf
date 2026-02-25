@@ -56,6 +56,28 @@ mix clean
 
 ---
 
+## Task Management
+
+Tasks are tracked using [`bd`](https://github.com/nicowillis/bd) — a minimal plaintext task manager.
+
+```bash
+# List all tasks
+bd
+
+# Add a new task
+bd add "task description"
+
+# Mark a task as done (by index)
+bd done 1
+
+# Remove a task (by index)
+bd rm 1
+```
+
+Tasks are stored in a `TODO` file at the repository root. Commit it alongside code changes so task state is versioned with the work.
+
+---
+
 ## Linter / Static Analysis
 
 No linter or type-checker dependency (Credo, Dialyxir, Sobelow) has been added yet. When they are added:
@@ -113,17 +135,17 @@ defmodule AtmlPdf.Parser do
   Parses ATML XML into an element tree.
   """
 
-  alias AtmlPdf.Element.{Col, Img, Label, Row}
+  alias AtmlPdf.Element.{Col, Document, Img, Row}
 
-  @type parse_result :: {:ok, Label.t()} | {:error, String.t()}
+  @type parse_result :: {:ok, Document.t()} | {:error, String.t()}
 
   @doc """
   Parses an ATML XML string.
 
   ## Examples
 
-      iex> AtmlPdf.Parser.parse("<label .../>")
-      {:ok, %AtmlPdf.Element.Label{}}
+      iex> AtmlPdf.Parser.parse("<document .../>")
+      {:ok, %AtmlPdf.Element.Document{}}
 
   """
   @spec parse(String.t()) :: parse_result()
@@ -140,7 +162,7 @@ end
 ### Imports and Aliases
 
 - Prefer `alias` over `import` to keep the call site readable.
-- Use `alias AtmlPdf.Element.{Label, Row, Col}` multi-alias syntax for related modules.
+- Use `alias AtmlPdf.Element.{Document, Row, Col}` multi-alias syntax for related modules.
 - Never `import` a module globally when only a few functions are needed — use explicit calls or a targeted `import SomeModule, only: [some_fn: 1]`.
 - `use ExUnit.Case` in test files; add `async: true` when tests have no shared state or side effects.
 
@@ -229,11 +251,11 @@ Anticipated module structure:
 lib/
   atml_pdf.ex               # Public API
   atml_pdf/
-    parser.ex               # XML parsing
+    parser.ex               # XML parsing (uses sweet_xml)
     layout.ex               # Layout resolution
     renderer.ex             # PDF rendering
     element/
-      label.ex              # <label> root element
+      document.ex           # <document> root element
       row.ex                # <row> element
       col.ex                # <col> element
       img.ex                # <img> element
@@ -249,3 +271,29 @@ Keep modules focused on a single responsibility. Cross-module dependencies shoul
 - Do not commit `.elixir_ls/` or `_build/` (both are gitignored).
 - Keep `mix.exs` the single source of truth for the project version and dependency list.
 - Write a meaningful `@moduledoc` for every new module before merging.
+
+## Landing the Plane (Session Completion)
+
+**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+
+**MANDATORY WORKFLOW:**
+
+1. **File issues for remaining work** - Create issues for anything that needs follow-up
+2. **Run quality gates** (if code changed) - Tests, linters, builds
+3. **Update issue status** - Close finished work, update in-progress items
+4. **PUSH TO REMOTE** - This is MANDATORY:
+   ```bash
+   git pull --rebase
+   bd sync
+   git push
+   git status  # MUST show "up to date with origin"
+   ```
+5. **Clean up** - Clear stashes, prune remote branches
+6. **Verify** - All changes committed AND pushed
+7. **Hand off** - Provide context for next session
+
+**CRITICAL RULES:**
+- Work is NOT complete until `git push` succeeds
+- NEVER stop before pushing - that leaves work stranded locally
+- NEVER say "ready to push when you are" - YOU must push
+- If push fails, resolve and retry until it succeeds
