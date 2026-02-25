@@ -1,0 +1,3 @@
+%{
+  "pdf": {:hex, :pdf, "0.7.2", "b5efe3a42b00a5332826d45fbe8384d1db0f04c8ee79230c7169c35c37290f14", [:mix], [], "hexpm", "9531eb13d8df9eb6675b806fa30b806cc6a93a3a0e08780ede0167eecc0f86ef"},
+}
