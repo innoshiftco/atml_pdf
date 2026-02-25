@@ -170,7 +170,9 @@ defmodule AtmlPdf.Renderer do
             y_offset =
               case col.vertical_align do
                 :top -> 0.0
-                :center -> max(0.0, (inner_height - text_height) / 2.0)
+                # For center alignment, center based on the font size itself, not the
+                # line height. This accounts for the visual center of the glyphs.
+                :center -> max(0.0, (inner_height - font_ctx.font_size) / 2.0)
                 :bottom -> max(0.0, inner_height - text_height)
               end
 
@@ -189,7 +191,7 @@ defmodule AtmlPdf.Renderer do
           current_y
 
         %Img{} = img ->
-          render_img(pdf, img, inner_x, current_y, inner_width, inner_height, col.vertical_align)
+          render_img(pdf, img, inner_x, current_y, inner_width, inner_height, col.text_align, col.vertical_align)
           current_y + img.height
 
         %Row{} = nested_row ->
@@ -216,6 +218,13 @@ defmodule AtmlPdf.Renderer do
 
     Pdf.set_text_leading(pdf, round(line_height))
 
+    # CRITICAL FIX: The pdf library's text_wrap checks if line_height > box_height
+    # and refuses to render if true. Since set_text_leading rounds the line_height,
+    # we must ensure the box height is at least the rounded line height.
+    # Otherwise text won't render and will be returned as {:continue, chunks}.
+    min_box_height = round(line_height)
+    adjusted_height = max(height, min_box_height)
+
     align_opt =
       case text_align do
         :left -> :left
@@ -223,25 +232,42 @@ defmodule AtmlPdf.Renderer do
         :right -> :right
       end
 
-    Pdf.text_wrap(pdf, {x, pdf_y}, {width, height}, text, align: align_opt)
+    Pdf.text_wrap(pdf, {x, pdf_y}, {width, adjusted_height}, text, align: align_opt)
   end
 
   # ---------------------------------------------------------------------------
   # Image rendering
   # ---------------------------------------------------------------------------
 
-  defp render_img(pdf, %Img{} = img, x, layout_y, _inner_width, _inner_height, _vertical_align) do
+  defp render_img(pdf, %Img{} = img, x, layout_y, inner_width, inner_height, text_align, vertical_align) do
     # Skip zero-dimension images (fit with no intrinsic size info)
     if img.width <= 0.0 or img.height <= 0.0 do
       :skip
     else
       page_height = page_height(pdf)
+
+      # Horizontal alignment (same as text)
+      x_offset =
+        case text_align do
+          :left -> 0.0
+          :center -> max(0.0, (inner_width - img.width) / 2.0)
+          :right -> max(0.0, inner_width - img.width)
+        end
+
+      # Vertical alignment (same as text)
+      y_offset =
+        case vertical_align do
+          :top -> 0.0
+          :center -> max(0.0, (inner_height - img.height) / 2.0)
+          :bottom -> max(0.0, inner_height - img.height)
+        end
+
       # PDF coords: bottom-left of image box
-      pdf_y = page_height - layout_y - img.height
+      pdf_y = page_height - (layout_y + y_offset) - img.height
 
       image_path = resolve_image_path(img.src)
 
-      Pdf.add_image(pdf, {x, pdf_y}, image_path,
+      Pdf.add_image(pdf, {x + x_offset, pdf_y}, image_path,
         width: img.width,
         height: img.height
       )
@@ -325,6 +351,7 @@ defmodule AtmlPdf.Renderer do
     Pdf.set_stroke_color(pdf, rgb)
     Pdf.set_line_width(pdf, width)
     Pdf.line(pdf, from, to)
+    Pdf.stroke(pdf)
   end
 
   # ---------------------------------------------------------------------------

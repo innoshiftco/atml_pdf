@@ -86,7 +86,12 @@ defmodule AtmlPdf.Layout do
     doc_width = to_pt(doc.width)
     doc_height = to_pt(doc.height)
 
-    resolved_children = resolve_rows(doc.children, doc_width, doc_height, font_ctx)
+    # Calculate inner dimensions after subtracting document padding
+    {pad_top, pad_right, pad_bottom, pad_left} = normalise_padding(doc.padding)
+    inner_width = doc_width - pad_left - pad_right
+    inner_height = doc_height - pad_top - pad_bottom
+
+    resolved_children = resolve_rows(doc.children, inner_width, inner_height, font_ctx)
 
     {:ok,
      %{
@@ -197,7 +202,11 @@ defmodule AtmlPdf.Layout do
     row_width = resolve_dim(row.width, parent_width, parent_width)
     row_width = clamp(row_width, nil, nil, parent_width)
 
-    resolved_cols = resolve_cols(row.children, row_width, resolved_height, font_ctx)
+    # Calculate inner dimensions for columns (subtract row padding)
+    row_inner_width = row_width - row.padding_left - row.padding_right
+    row_inner_height = resolved_height - row.padding_top - row.padding_bottom
+
+    resolved_cols = resolve_cols(row.children, row_inner_width, row_inner_height, font_ctx)
 
     %{
       row
@@ -265,7 +274,9 @@ defmodule AtmlPdf.Layout do
   defp natural_col_width(%Col{} = col, font_ctx) do
     resolved_font_ctx = merge_font_ctx(font_ctx, col)
     fs = resolved_font_ctx.font_size
-    avg_char_width = fs * 0.5
+    # Use 0.6 instead of 0.5 to account for character width variation
+    # and prevent clipping on right-aligned text with wider characters
+    avg_char_width = fs * 0.6
 
     padding_h = col.padding_left + col.padding_right
 
@@ -312,8 +323,12 @@ defmodule AtmlPdf.Layout do
 
     col_height = clamp(col_height, nil, nil, row_height)
 
+    # Calculate inner dimensions for nested children (subtract column padding)
+    col_inner_width = resolved_width - col.padding_left - col.padding_right
+    col_inner_height = col_height - col.padding_top - col.padding_bottom
+
     resolved_children =
-      resolve_col_children(col.children, resolved_width, col_height, resolved_font_ctx)
+      resolve_col_children(col.children, col_inner_width, col_inner_height, resolved_font_ctx, col)
 
     %{
       col
@@ -329,18 +344,19 @@ defmodule AtmlPdf.Layout do
   end
 
   # Resolves the mixed children of a col (text strings, Img, Row).
-  defp resolve_col_children(children, col_width, col_height, font_ctx) do
+  # col_width and col_height are the INNER dimensions (after col padding).
+  defp resolve_col_children(children, col_inner_width, col_inner_height, font_ctx, _col) do
     Enum.map(children, fn
       text when is_binary(text) ->
         text
 
       %Row{} = row ->
-        # Nested rows inside a col: resolve them with col dimensions as parent.
-        [resolved_row] = resolve_rows([row], col_width, col_height, font_ctx)
+        # Nested rows inside a col: resolve them with col inner dimensions as parent.
+        [resolved_row] = resolve_rows([row], col_inner_width, col_inner_height, font_ctx)
         resolved_row
 
       %Img{} = img ->
-        resolve_img(img, col_width, col_height)
+        resolve_img(img, col_inner_width, col_inner_height)
     end)
   end
 
@@ -398,6 +414,11 @@ defmodule AtmlPdf.Layout do
   # ---------------------------------------------------------------------------
   # Dimension utilities
   # ---------------------------------------------------------------------------
+
+  # Normalise padding to a {top, right, bottom, left} tuple.
+  defp normalise_padding({t, r, b, l}), do: {t, r, b, l}
+  defp normalise_padding(n) when is_number(n), do: {n, n, n, n}
+  defp normalise_padding(_), do: {0, 0, 0, 0}
 
   # Converts a tagged dimension to a plain pt float.
   # `parent_same_axis` is used for % resolution.

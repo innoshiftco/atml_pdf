@@ -235,7 +235,7 @@ A vertical cell within a `<row>`. Columns are laid out horizontally within their
 
 | Attribute | Type | Default | Notes |
 |---|---|---|---|
-| `width` | dimension | `fill` | Column width within the parent row |
+| `width` | dimension | `fit` | Column width within the parent row |
 | `min-width` | dimension | — | Floor constraint |
 | `max-width` | dimension | — | Ceiling constraint |
 | `height` | dimension | `fill` | Height relative to the parent row |

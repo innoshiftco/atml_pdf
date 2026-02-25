@@ -27,6 +27,18 @@ end
 
 ## Quick Start
 
+### Command line
+
+Render a template file to PDF directly from the shell:
+
+```bash
+# Output written next to the template (label.pdf)
+mix atml_pdf.render label.xml
+
+# Explicit output path
+mix atml_pdf.render label.xml /tmp/label.pdf
+```
+
 ### Render to a file
 
 ```elixir
@@ -219,6 +231,34 @@ deps:
 ```elixir
 {:barlix, "~> 0.6"}
 ```
+
+## Mix Task
+
+`mix atml_pdf.render` renders an ATML template file to a PDF file without
+writing any Elixir code.
+
+```
+mix atml_pdf.render TEMPLATE [OUTPUT]
+```
+
+| Argument | Required | Description |
+|---|---|---|
+| `TEMPLATE` | yes | Path to the ATML XML template file |
+| `OUTPUT` | no | Destination PDF path. Defaults to the template path with `.pdf` extension |
+
+```bash
+# Minimal — output written as label.pdf in the same directory
+mix atml_pdf.render label.xml
+
+# Explicit output path
+mix atml_pdf.render templates/waybill.xml /tmp/output.pdf
+
+# Absolute paths work too
+mix atml_pdf.render /data/templates/label.xml /data/output/label.pdf
+```
+
+Exit codes: `0` on success, `1` on any error (missing file, parse failure,
+render failure).
 
 ## API Reference
 

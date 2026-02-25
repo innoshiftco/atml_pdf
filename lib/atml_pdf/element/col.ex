@@ -30,7 +30,7 @@ defmodule AtmlPdf.Element.Col do
           children: list()
         }
 
-  defstruct width: :fill,
+  defstruct width: :fit,
             min_width: nil,
             max_width: nil,
             height: :fill,
