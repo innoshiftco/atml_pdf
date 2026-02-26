@@ -4,7 +4,7 @@ Guidance for agentic coding agents working in this repository.
 
 ## Project Overview
 
-`atml_pdf` is an Elixir library that parses **ATML (AWB Template Markup Language)** — an XML-based format for defining Airway Bill (shipping label) layouts — and renders the result to PDF. The project is early-stage; the domain specification lives in `ATML_language_specs.md`.
+`atml_pdf` is an Elixir library that parses **ATML** — an XML-based format for defining label layouts — and renders the result to PDF. The project is early-stage; the domain specification lives in `ATML_language_specs.md`.
 
 **Language:** Elixir (≥ 1.18), running on the BEAM/OTP  
 **Build tool:** Mix (Elixir's built-in build and package manager)  
