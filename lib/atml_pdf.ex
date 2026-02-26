@@ -2,9 +2,8 @@ defmodule AtmlPdf do
   @moduledoc """
   Public API for rendering ATML templates to PDF.
 
-  ATML (AWB Template Markup Language) is an XML-based format for authoring
-  printable Airway Bill label templates.  This module provides two entry
-  points:
+  ATML is an XML-based format for authoring printable label templates.
+  This module provides two entry points:
 
   - `render/3` — parse, layout, and write a PDF file to disk.
   - `render_binary/2` — parse, layout, and return the PDF as a binary.

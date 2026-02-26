@@ -1,6 +1,6 @@
 # atml_pdf
 
-An Elixir library that parses **ATML (AWB Template Markup Language)** — an XML-based format for defining Airway Bill shipping label layouts — and renders the result to PDF.
+An Elixir library that parses **ATML** — an XML-based format for defining label layouts — and renders the result to PDF.
 
 ## Overview
 

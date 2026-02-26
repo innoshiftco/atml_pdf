@@ -1,6 +1,6 @@
 # ATML — Simple Template Markup Language Specification
 
-> Version 1.0 | A declarative XML dialect for defining Airway Bill label layouts that render to PDF.
+> Version 1.0 | A declarative XML dialect for defining label layouts that render to PDF.
 
 ---
 
@@ -29,7 +29,7 @@
 
 ## Overview
 
-ATML (AWB Template Markup Language) is an XML-based format for authoring printable Airway Bill label templates. The only layout primitives are rows and columns, enabling a predictable and unambiguous mapping to PDF output.
+ATML is an XML-based format for authoring printable label templates. The only layout primitives are rows and columns, enabling a predictable and unambiguous mapping to PDF output.
 
 An ATML document describes a single label. The renderer resolves dimensions, applies font inheritance, then generates the PDF with no external stylesheet dependencies.
 
