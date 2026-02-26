@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document width="400pt" height="600pt" font-family="Helvetica" font-size="8pt" padding="12pt">
+  <!-- Row 1: Header — Logo | MAIN | (empty) -->
+  <row height="50pt" border="solid 1pt #000000">
+    <col width="30%" vertical-align="center" text-align="center" padding="4pt" border-right="solid 1pt #000000">
+      <img src="examples/logo.png" width="80pt" height="35pt"/>
+    </col>
+    <col width="40%" vertical-align="center" text-align="center" padding="4pt" font-size="24pt" font-weight="bold" border-right="solid 1pt #000000">
+      MAIN
+    </col>
+    <col width="30%"/>
+  </row>
+  <!-- Row 2: Full-width barcode -->
+  <row height="60pt" border-bottom="solid 1pt #000000" border-left="solid 1pt #000000" border-right="solid 1pt #000000">
+    <col width="fill" vertical-align="center" text-align="center" padding="8pt 16pt">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAARQAAABICAAAAAASIFWdAAAAAklEQVR4nGKkkSsAAACtSURBVO3QwQqEMAwE0P7/T7uKlCY6eF3BNwdb05KUNza5Zfz7AW8MlBAoIVBCoIQ8oIw9x/fc1+r8O8/nrV7v6+q07q619pnz1txa66+59u/nvWOdWatQoECBAgUKFChQoECBAgUKFChQoECBAgUKFChQoECBAgUKFChQoECBAgUKFChQoECBAgUKFChQoECBAgUKFChQoECBAgUKlLegfDdQQqCEQAmBEgIl5Aek0S+e3s2RjAAAAABJRU5ErkJggg==" width="fill" height="40pt"/>
+    </col>
+  </row>
+  <!-- Row 3: Order number | Tracking number -->
+  <row height="28pt" border-bottom="solid 1pt #000000" border-left="solid 1pt #000000" border-right="solid 1pt #000000">
+    <col width="55%" padding="4pt 8pt" vertical-align="center" text-align="center" font-size="10pt" border-right="solid 1pt #000000">
+      ORD-2024-001235
+    </col>
+    <col width="45%" padding="4pt 8pt" vertical-align="center" text-align="center" font-size="10pt">
+      XDE001235
+    </col>
+  </row>
+  <!-- Row 4: Buyer section -->
+  <row border-bottom="solid 1pt #000000" border-left="solid 1pt #000000" border-right="solid 1pt #000000">
+    <col width="40pt" vertical-align="center" text-align="center" font-size="7pt" border-right="solid 1pt #000000" padding="4pt">
+      Buyer
+    </col>
+    <col width="fill" padding="6pt 8pt">
+      <!-- Name and service type row -->
+      <row>
+        <col width="fill" font-size="14pt" font-weight="bold">
+          Lim Wei Jie
+        </col>
+        <col width="fit" font-size="10pt" font-weight="bold" text-align="right">
+          Express
+        </col>
+      </row>
+      <!-- Address row -->
+      <row>
+        <col font-size="9pt" padding-top="2pt">
+          18 Havelock Road, #04-22 Central Square
+        </col>
+      </row>
+      <!-- District and City row -->
+      <row>
+        <col width="50%" font-size="11pt" font-weight="bold" padding-top="6pt">
+          Chinatown
+        </col>
+        <col width="50%" padding-top="6pt">
+          <row>
+            <col font-size="11pt" font-weight="bold">
+              Singapore
+            </col>
+          </row>
+          <row>
+            <col font-size="9pt">
+              Singapore 059763
+            </col>
+          </row>
+        </col>
+      </row>
+    </col>
+  </row>
+  <!-- Row 5: Seller section -->
+  <row border-bottom="solid 1pt #000000" border-left="solid 1pt #000000" border-right="solid 1pt #000000">
+    <col width="40pt" vertical-align="center" text-align="center" font-size="7pt" border-right="solid 1pt #000000" padding="4pt">
+      Seller
+    </col>
+    <col width="fill" padding="6pt 8pt">
+      <!-- Name row -->
+      <row>
+        <col font-size="14pt" font-weight="bold">
+          Tech Gadgets Pte Ltd
+        </col>
+      </row>
+      <!-- Address row -->
+      <row>
+        <col font-size="9pt" padding-top="2pt">
+          3 Fusionopolis Way, #08-21 Symbiosis
+        </col>
+      </row>
+      <!-- District and City row -->
+      <row>
+        <col width="50%" font-size="11pt" font-weight="bold" padding-top="6pt">
+          one-north
+        </col>
+        <col width="50%" padding-top="6pt">
+          <row>
+            <col font-size="11pt" font-weight="bold">
+              Singapore
+            </col>
+          </row>
+          <row>
+            <col font-size="9pt">
+              Singapore 138633
+            </col>
+          </row>
+        </col>
+      </row>
+    </col>
+  </row>
+  <!-- Row 6: Barcode | QR Code | COD Amount -->
+  <row height="90pt" border-bottom="solid 1pt #000000" border-left="solid 1pt #000000" border-right="solid 1pt #000000">
+    <col width="40%" vertical-align="center" text-align="center" padding="6pt" border-right="solid 1pt #000000">
+      <row>
+        <col text-align="center" vertical-align="center">
+          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIwAAAAwCAAAAADmo83sAAAAAklEQVR4nGKkkSsAAABgSURBVO3OSwrAIAwFwHf/S1uqkX7AbetiHgRiImHSNkr+BtwDs8oLk5yTjDZ930fVV6XNVa/xJ21UdXn+r3fmqesqDAwMDAwMDAwMDAwMDAwMDAwMDAzMh5h/A7PKVpgD+/pvgOVWS5IAAAAASUVORK5CYII=" width="fill" height="40pt"/>
+        </col>
+      </row>
+      <row>
+        <col text-align="center" font-size="9pt" padding-top="8pt">
+          XDE001235
+        </col>
+      </row>
+    </col>
+    <col width="30%" vertical-align="center" text-align="center" padding="6pt" border-right="solid 1pt #000000">
+      <img src="examples/qr.png"  width="70pt" height="70pt"/>
+    </col>
+    <col width="30%" vertical-align="center" text-align="center" padding="6pt">
+      <row>
+        <col font-size="16pt">
+          VND
+        </col>
+      </row>
+      <row>
+        <col font-size="16pt" font-weight="bold" padding-top="2pt">
+          10,250,000
+        </col>
+      </row>
+    </col>
+  </row>
+  <!-- Row 7: Instructions -->
+  <row height="28pt" border-bottom="solid 1pt #000000" border-left="solid 1pt #000000" border-right="solid 1pt #000000">
+    <col width="fill" padding="4pt 8pt" vertical-align="center" font-size="9pt">
+      Place instructions here:
+    </col>
+  </row>
+  <!-- Row 8: Items list -->
+  <row height="fill" border="solid 1pt #000000">
+    <col width="fill" padding="6pt 8pt">
+      <row>
+        <col font-size="12pt" font-weight="bold">
+          ITEMS:
+        </col>
+      </row>
+      <row>
+        <col font-size="9pt" padding-top="4pt">
+          2x Lotus Towel 100% Cotton Premium Soft Absorbent Bath Towel Set
+        </col>
+      </row>
+      <row>
+        <col font-size="9pt" padding-top="4pt">
+          1x FORNICALMORE Portable Power Bank 20000mAh with Built-in 4-in-1 Charging Cable
+        </col>
+      </row>
+      <row>
+        <col font-size="9pt" padding-top="4pt">
+          3x UGREEN HDMI 2.0 Cable 4K60Hz 18Gbps High Speed Ultra HD Gold Connector Support 3D Mirror Extend Mode for Smart TV, PS5, Laptop, Projector (0.5-10M) Model: HD104
+        </col>
+      </row>
+    </col>
+  </row>
+</document>
