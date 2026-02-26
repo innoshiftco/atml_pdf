@@ -3,6 +3,7 @@ defmodule AtmlPdf.RendererTest do
   use ExUnit.Case, async: true
 
   alias AtmlPdf.{Layout, Parser, Renderer}
+  alias AtmlPdf.PdfBackend.Context
 
   # ---------------------------------------------------------------------------
   # Helpers
@@ -12,6 +13,19 @@ defmodule AtmlPdf.RendererTest do
     {:ok, parsed} = Parser.parse(xml)
     {:ok, resolved} = Layout.resolve(parsed)
     resolved
+  end
+
+  # Helper to export and cleanup backend state from context
+  defp export_and_cleanup(%Context{} = ctx) do
+    backend = ctx.backend_module
+    binary = backend.export(ctx.backend_state)
+    backend.cleanup(ctx.backend_state)
+    binary
+  end
+
+  # Helper to just cleanup backend state from context
+  defp cleanup(%Context{} = ctx) do
+    ctx.backend_module.cleanup(ctx.backend_state)
   end
 
   # Minimal 1×1 white pixel PNG — valid for Pdf.add_image without disk fixture.
@@ -28,27 +42,26 @@ defmodule AtmlPdf.RendererTest do
   # ---------------------------------------------------------------------------
 
   describe "render/2" do
-    test "returns {:ok, pid} for a minimal document" do
+    test "returns {:ok, ctx} for a minimal document" do
       doc = resolve!(~s|<document width="100pt" height="100pt"></document>|)
-      assert {:ok, pid} = Renderer.render(doc)
-      assert is_pid(pid)
-      Pdf.cleanup(pid)
+      assert {:ok, ctx} = Renderer.render(doc)
+      assert %Context{} = ctx
+      assert ctx.backend_module == AtmlPdf.PdfBackend.PdfAdapter
+      cleanup(ctx)
     end
 
     test "pdf export produces a non-empty binary" do
       doc = resolve!(~s|<document width="100pt" height="100pt"></document>|)
-      {:ok, pid} = Renderer.render(doc)
-      binary = Pdf.export(pid)
-      Pdf.cleanup(pid)
+      {:ok, ctx} = Renderer.render(doc)
+      binary = export_and_cleanup(ctx)
       assert is_binary(binary)
       assert byte_size(binary) > 0
     end
 
     test "pdf binary starts with PDF header" do
       doc = resolve!(~s|<document width="100pt" height="100pt"></document>|)
-      {:ok, pid} = Renderer.render(doc)
-      binary = Pdf.export(pid)
-      Pdf.cleanup(pid)
+      {:ok, ctx} = Renderer.render(doc)
+      binary = export_and_cleanup(ctx)
       assert binary =~ "%PDF-"
     end
 
@@ -62,9 +75,8 @@ defmodule AtmlPdf.RendererTest do
       """
 
       doc = resolve!(xml)
-      assert {:ok, pid} = Renderer.render(doc)
-      binary = Pdf.export(pid)
-      Pdf.cleanup(pid)
+      assert {:ok, ctx} = Renderer.render(doc)
+      binary = export_and_cleanup(ctx)
       assert byte_size(binary) > 0
     end
 
@@ -78,9 +90,9 @@ defmodule AtmlPdf.RendererTest do
       """
 
       doc = resolve!(xml)
-      assert {:ok, pid} = Renderer.render(doc)
-      binary = Pdf.export(pid)
-      Pdf.cleanup(pid)
+      assert {:ok, ctx} = Renderer.render(doc)
+      binary = export_and_cleanup(ctx)
+
       assert byte_size(binary) > 0
     end
 
@@ -94,9 +106,9 @@ defmodule AtmlPdf.RendererTest do
       """
 
       doc = resolve!(xml)
-      assert {:ok, pid} = Renderer.render(doc)
-      binary = Pdf.export(pid)
-      Pdf.cleanup(pid)
+      assert {:ok, ctx} = Renderer.render(doc)
+      binary = export_and_cleanup(ctx)
+
       assert byte_size(binary) > 0
     end
 
@@ -113,8 +125,8 @@ defmodule AtmlPdf.RendererTest do
       """
 
       doc = resolve!(xml)
-      assert {:ok, pid} = Renderer.render(doc)
-      Pdf.cleanup(pid)
+      assert {:ok, ctx} = Renderer.render(doc)
+      cleanup(ctx)
     end
 
     test "renders multiple cols in a row" do
@@ -128,8 +140,8 @@ defmodule AtmlPdf.RendererTest do
       """
 
       doc = resolve!(xml)
-      assert {:ok, pid} = Renderer.render(doc)
-      Pdf.cleanup(pid)
+      assert {:ok, ctx} = Renderer.render(doc)
+      cleanup(ctx)
     end
 
     test "renders nested rows inside a col" do
@@ -146,8 +158,8 @@ defmodule AtmlPdf.RendererTest do
       """
 
       doc = resolve!(xml)
-      assert {:ok, pid} = Renderer.render(doc)
-      Pdf.cleanup(pid)
+      assert {:ok, ctx} = Renderer.render(doc)
+      cleanup(ctx)
     end
 
     test "renders font overrides on cols" do
@@ -160,8 +172,8 @@ defmodule AtmlPdf.RendererTest do
       """
 
       doc = resolve!(xml)
-      assert {:ok, pid} = Renderer.render(doc)
-      Pdf.cleanup(pid)
+      assert {:ok, ctx} = Renderer.render(doc)
+      cleanup(ctx)
     end
 
     test "renders full spec example template" do
@@ -229,9 +241,9 @@ defmodule AtmlPdf.RendererTest do
       """
 
       doc = resolve!(xml)
-      assert {:ok, pid} = Renderer.render(doc)
-      binary = Pdf.export(pid)
-      Pdf.cleanup(pid)
+      assert {:ok, ctx} = Renderer.render(doc)
+      binary = export_and_cleanup(ctx)
+
       assert is_binary(binary)
       assert byte_size(binary) > 0
     end
@@ -256,9 +268,9 @@ defmodule AtmlPdf.RendererTest do
       """
 
       doc = resolve!(xml)
-      assert {:ok, pid} = Renderer.render(doc)
-      binary = Pdf.export(pid)
-      Pdf.cleanup(pid)
+      assert {:ok, ctx} = Renderer.render(doc)
+      binary = export_and_cleanup(ctx)
+
       assert binary =~ "%PDF-"
     end
 
@@ -282,9 +294,9 @@ defmodule AtmlPdf.RendererTest do
       """
 
       doc = resolve!(xml)
-      assert {:ok, pid} = Renderer.render(doc)
-      binary = Pdf.export(pid)
-      Pdf.cleanup(pid)
+      assert {:ok, ctx} = Renderer.render(doc)
+      binary = export_and_cleanup(ctx)
+
       assert byte_size(binary) > 0
     end
 
@@ -308,8 +320,9 @@ defmodule AtmlPdf.RendererTest do
       result = Renderer.render(doc)
       assert match?({:ok, _}, result) or match?({:error, _}, result)
 
-      if match?({:ok, _}, result) do
-        Pdf.cleanup(elem(result, 1))
+      case result do
+        {:ok, ctx} -> cleanup(ctx)
+        _ -> :ok
       end
     end
   end

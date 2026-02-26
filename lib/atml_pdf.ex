@@ -14,7 +14,18 @@ defmodule AtmlPdf do
       ATML XML string
         → AtmlPdf.Parser    (XML → element structs)
         → AtmlPdf.Layout    (resolve dimensions & font inheritance)
-        → AtmlPdf.Renderer  (element tree → PDF via the `pdf` library)
+        → AtmlPdf.Renderer  (element tree → PDF via configured backend)
+
+  ## Configuration
+
+  Configure the PDF backend in your application config:
+
+      config :atml_pdf,
+        pdf_backend: AtmlPdf.PdfBackend.PdfAdapter  # Default
+
+  Or specify per-render call:
+
+      AtmlPdf.render(xml, path, backend: AtmlPdf.PdfBackend.ExGutenAdapter)
 
   ## Examples
 
@@ -37,7 +48,7 @@ defmodule AtmlPdf do
 
   - `template` — ATML XML string.
   - `path` — Destination file path (will be created or overwritten).
-  - `opts` — Reserved for future options; currently unused.
+  - `opts` — Options including `:backend` to override default PDF backend.
 
   ## Examples
 
@@ -53,9 +64,10 @@ defmodule AtmlPdf do
   def render(template, path, opts \\ []) do
     with {:ok, tree} <- Parser.parse(template),
          {:ok, resolved} <- Layout.resolve(tree),
-         {:ok, pdf} <- Renderer.render(resolved, opts) do
-      Pdf.write_to(pdf, path)
-      Pdf.cleanup(pdf)
+         {:ok, ctx} <- Renderer.render(resolved, opts) do
+      backend = ctx.backend_module
+      backend.write_to(ctx.backend_state, path)
+      backend.cleanup(ctx.backend_state)
       :ok
     end
   end
@@ -68,7 +80,7 @@ defmodule AtmlPdf do
   ## Parameters
 
   - `template` — ATML XML string.
-  - `opts` — Reserved for future options; currently unused.
+  - `opts` — Options including `:backend` to override default PDF backend.
 
   ## Examples
 
@@ -82,9 +94,10 @@ defmodule AtmlPdf do
   def render_binary(template, opts \\ []) do
     with {:ok, tree} <- Parser.parse(template),
          {:ok, resolved} <- Layout.resolve(tree),
-         {:ok, pdf} <- Renderer.render(resolved, opts) do
-      binary = Pdf.export(pdf)
-      Pdf.cleanup(pdf)
+         {:ok, ctx} <- Renderer.render(resolved, opts) do
+      backend = ctx.backend_module
+      binary = backend.export(ctx.backend_state)
+      backend.cleanup(ctx.backend_state)
       {:ok, binary}
     end
   end

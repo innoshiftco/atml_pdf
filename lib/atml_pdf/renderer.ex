@@ -1,11 +1,11 @@
 defmodule AtmlPdf.Renderer do
   @moduledoc """
-  Walks a fully-resolved ATML element tree and issues `Pdf.*` calls to produce
+  Walks a fully-resolved ATML element tree and issues backend calls to produce
   a PDF document.
 
   ## Coordinate system
 
-  The `pdf` library uses a **bottom-left origin**: `{0, 0}` is the lower-left
+  PDF libraries typically use a **bottom-left origin**: `{0, 0}` is the lower-left
   corner of the page and `y` increases upward.  ATML layout resolves dimensions
   top-down, so the renderer must flip the Y-axis:
 
@@ -13,44 +13,58 @@ defmodule AtmlPdf.Renderer do
 
   ## Entry point
 
-      {:ok, pdf_pid} = AtmlPdf.Renderer.render(resolved_doc)
-      binary = Pdf.export(pdf_pid)
-      Pdf.cleanup(pdf_pid)
+      {:ok, ctx} = AtmlPdf.Renderer.render(resolved_doc)
+      backend = ctx.backend_module
+      binary = backend.export(ctx.backend_state)
+      backend.cleanup(ctx.backend_state)
 
-  `render/2` accepts an optional keyword list of options (currently unused, but
-  reserved for future configuration such as compression settings).
+  `render/2` accepts an optional keyword list of options including:
+  - `:backend` - Backend module to use (defaults to application config or PdfAdapter)
+  - `:compress` - Enable compression (backend-specific)
   """
 
   alias AtmlPdf.Element.{Col, Document, Img, Row}
+  alias AtmlPdf.PdfBackend.Context
 
   # ---------------------------------------------------------------------------
   # Public API
   # ---------------------------------------------------------------------------
 
   @doc """
-  Renders a fully-resolved `%Document{}` to a new `Pdf` process.
+  Renders a fully-resolved `%Document{}` using the configured PDF backend.
 
-  Returns `{:ok, pid}` on success where `pid` is a live `Pdf` process.
-  The caller is responsible for calling `Pdf.export/1` or `Pdf.write_to/2`
-  and then `Pdf.cleanup/1`.
+  Returns `{:ok, ctx}` on success where `ctx` is a `%Context{}` struct containing
+  the backend module and state. The caller is responsible for calling backend
+  export/write and cleanup operations.
 
   Returns `{:error, reason}` if rendering fails.
+
+  ## Options
+
+  - `:backend` - Backend module implementing `AtmlPdf.PdfBackend` (optional)
+  - Additional backend-specific options (e.g., `:compress`)
 
   ## Examples
 
       iex> xml = ~s|<document width="100pt" height="100pt"></document>|
       iex> {:ok, parsed} = AtmlPdf.Parser.parse(xml)
       iex> {:ok, resolved} = AtmlPdf.Layout.resolve(parsed)
-      iex> {:ok, pdf} = AtmlPdf.Renderer.render(resolved)
-      iex> is_pid(pdf)
-      true
-      iex> Pdf.cleanup(pdf)
+      iex> {:ok, ctx} = AtmlPdf.Renderer.render(resolved)
+      iex> ctx.backend_module.cleanup(ctx.backend_state)
       :ok
 
   """
-  @spec render(Document.t(), keyword()) :: {:ok, pid()} | {:error, String.t()}
-  def render(%Document{} = doc, _opts \\ []) do
-    {:ok, pdf} = Pdf.new(size: [doc.width, doc.height], compress: false)
+  @spec render(Document.t(), keyword()) :: {:ok, Context.t()} | {:error, String.t()}
+  def render(%Document{} = doc, opts \\ []) do
+    backend = get_backend_module(opts)
+    {:ok, backend_state} = backend.new(doc.width, doc.height, opts)
+
+    ctx = %Context{
+      backend_module: backend,
+      backend_state: backend_state,
+      page_width: doc.width,
+      page_height: doc.height
+    }
 
     font_ctx = %{
       font_family: doc.font_family,
@@ -64,35 +78,54 @@ defmodule AtmlPdf.Renderer do
     inner_y = pad_top
     inner_width = doc.width - pad_left - pad_right
 
-    Pdf.set_font(pdf, font_ctx.font_family, round(font_ctx.font_size),
-      bold: font_ctx.font_weight == :bold
-    )
+    # Set initial font through backend
+    ctx = update_backend(ctx, fn state ->
+      backend.set_font(state, font_ctx.font_family, font_ctx.font_size,
+        bold: font_ctx.font_weight == :bold
+      )
+    end)
 
-    render_rows(pdf, doc.children, inner_x, inner_y, inner_width, doc.height, font_ctx)
+    ctx = render_rows(ctx, doc.children, inner_x, inner_y, inner_width, doc.height, font_ctx)
 
-    {:ok, pdf}
+    {:ok, ctx}
   rescue
     e -> {:error, "Render error: #{Exception.message(e)}"}
+  end
+
+  # Resolves the backend module from options or application config
+  defp get_backend_module(opts) do
+    Keyword.get(opts, :backend) ||
+      Application.get_env(:atml_pdf, :pdf_backend) ||
+      AtmlPdf.PdfBackend.PdfAdapter
+  end
+
+  # Helper to update backend state and return updated context
+  defp update_backend(%Context{} = ctx, fun) do
+    new_state = fun.(ctx.backend_state)
+    %{ctx | backend_state: new_state}
   end
 
   # ---------------------------------------------------------------------------
   # Row rendering
   # ---------------------------------------------------------------------------
 
-  defp render_rows(pdf, rows, origin_x, origin_y, _parent_width, _parent_height, font_ctx) do
-    Enum.reduce(rows, origin_y, fn %Row{} = row, current_y ->
-      render_row(pdf, row, origin_x, current_y, font_ctx)
-      current_y + row.height
-    end)
+  defp render_rows(ctx, rows, origin_x, origin_y, _parent_width, _parent_height, font_ctx) do
+    {ctx, _} =
+      Enum.reduce(rows, {ctx, origin_y}, fn %Row{} = row, {ctx_acc, current_y} ->
+        ctx_acc = render_row(ctx_acc, row, origin_x, current_y, font_ctx)
+        {ctx_acc, current_y + row.height}
+      end)
+
+    ctx
   end
 
-  defp render_row(pdf, %Row{} = row, origin_x, origin_y, font_ctx) do
+  defp render_row(ctx, %Row{} = row, origin_x, origin_y, font_ctx) do
     # Draw row borders
-    draw_borders(pdf, origin_x, origin_y, row.width, row.height, row)
+    ctx = draw_borders(ctx, origin_x, origin_y, row.width, row.height, row)
 
     # Render columns side by side
     render_cols(
-      pdf,
+      ctx,
       row.children,
       origin_x + row.padding_left,
       origin_y + row.padding_top,
@@ -106,14 +139,17 @@ defmodule AtmlPdf.Renderer do
   # Col rendering
   # ---------------------------------------------------------------------------
 
-  defp render_cols(pdf, cols, origin_x, origin_y, _row_inner_width, row_inner_height, font_ctx) do
-    Enum.reduce(cols, origin_x, fn %Col{} = col, current_x ->
-      render_col(pdf, col, current_x, origin_y, row_inner_height, font_ctx)
-      current_x + col.width
-    end)
+  defp render_cols(ctx, cols, origin_x, origin_y, _row_inner_width, row_inner_height, font_ctx) do
+    {ctx, _} =
+      Enum.reduce(cols, {ctx, origin_x}, fn %Col{} = col, {ctx_acc, current_x} ->
+        ctx_acc = render_col(ctx_acc, col, current_x, origin_y, row_inner_height, font_ctx)
+        {ctx_acc, current_x + col.width}
+      end)
+
+    ctx
   end
 
-  defp render_col(pdf, %Col{} = col, origin_x, origin_y, _row_inner_height, font_ctx) do
+  defp render_col(ctx, %Col{} = col, origin_x, origin_y, _row_inner_height, font_ctx) do
     col_font_ctx = %{
       font_family: col.font_family || font_ctx.font_family,
       font_size: col.font_size || font_ctx.font_size,
@@ -121,7 +157,7 @@ defmodule AtmlPdf.Renderer do
     }
 
     # Draw col borders
-    draw_borders(pdf, origin_x, origin_y, col.width, col.height, col)
+    ctx = draw_borders(ctx, origin_x, origin_y, col.width, col.height, col)
 
     # Inner content area (after padding)
     inner_x = origin_x + col.padding_left
@@ -131,7 +167,7 @@ defmodule AtmlPdf.Renderer do
 
     # Collect text children to measure total text height for vertical-align
     render_col_children(
-      pdf,
+      ctx,
       col.children,
       inner_x,
       inner_y,
@@ -143,7 +179,7 @@ defmodule AtmlPdf.Renderer do
   end
 
   defp render_col_children(
-         pdf,
+         ctx,
          children,
          inner_x,
          inner_y,
@@ -155,68 +191,78 @@ defmodule AtmlPdf.Renderer do
     # Split children into text/img segments and nested rows.
     # For text/img we apply vertical-align within inner_height.
     # For nested rows we just stack them.
-    Enum.reduce(children, inner_y, fn child, current_y ->
-      case child do
-        text when is_binary(text) ->
-          trimmed = String.trim(text)
+    {ctx, _} =
+      Enum.reduce(children, {ctx, inner_y}, fn child, {ctx_acc, current_y} ->
+        case child do
+          text when is_binary(text) ->
+            trimmed = String.trim(text)
 
-          if trimmed != "" do
-            Pdf.set_font(pdf, font_ctx.font_family, round(font_ctx.font_size),
-              bold: font_ctx.font_weight == :bold
-            )
+            ctx_acc =
+              if trimmed != "" do
+                ctx_acc = update_backend(ctx_acc, fn state ->
+                  ctx_acc.backend_module.set_font(state, font_ctx.font_family, font_ctx.font_size,
+                    bold: font_ctx.font_weight == :bold
+                  )
+                end)
 
-            text_height = estimate_text_height(trimmed, inner_width, font_ctx.font_size)
+                text_height = estimate_text_height(trimmed, inner_width, font_ctx.font_size)
 
-            y_offset =
-              case col.vertical_align do
-                :top -> 0.0
-                # For center alignment, center based on the font size itself, not the
-                # line height. This accounts for the visual center of the glyphs.
-                :center -> max(0.0, (inner_height - font_ctx.font_size) / 2.0)
-                :bottom -> max(0.0, inner_height - text_height)
+                y_offset =
+                  case col.vertical_align do
+                    :top -> 0.0
+                    # For center alignment, center based on the font size itself, not the
+                    # line height. This accounts for the visual center of the glyphs.
+                    :center -> max(0.0, (inner_height - font_ctx.font_size) / 2.0)
+                    :bottom -> max(0.0, inner_height - text_height)
+                  end
+
+                render_text(
+                  ctx_acc,
+                  trimmed,
+                  inner_x,
+                  current_y + y_offset,
+                  inner_width,
+                  inner_height,
+                  col.text_align,
+                  font_ctx
+                )
+              else
+                ctx_acc
               end
 
-            render_text(
-              pdf,
-              trimmed,
-              inner_x,
-              current_y + y_offset,
-              inner_width,
-              inner_height,
-              col.text_align,
-              font_ctx
-            )
-          end
+            {ctx_acc, current_y}
 
-          current_y
+          %Img{} = img ->
+            ctx_acc = render_img(ctx_acc, img, inner_x, current_y, inner_width, inner_height, col.text_align, col.vertical_align)
+            {ctx_acc, current_y + img.height}
 
-        %Img{} = img ->
-          render_img(pdf, img, inner_x, current_y, inner_width, inner_height, col.text_align, col.vertical_align)
-          current_y + img.height
+          %Row{} = nested_row ->
+            ctx_acc = render_row(ctx_acc, nested_row, inner_x, current_y, font_ctx)
+            {ctx_acc, current_y + nested_row.height}
+        end
+      end)
 
-        %Row{} = nested_row ->
-          render_row(pdf, nested_row, inner_x, current_y, font_ctx)
-          current_y + nested_row.height
-      end
-    end)
+    ctx
   end
 
   # ---------------------------------------------------------------------------
   # Text rendering
   # ---------------------------------------------------------------------------
 
-  defp render_text(pdf, text, x, layout_y, width, height, text_align, font_ctx) do
-    page_height = page_height(pdf)
+  defp render_text(ctx, text, x, layout_y, width, height, text_align, font_ctx) do
+    page_height = ctx.page_height
 
     # text_wrap uses top-left origin and a bounding box {width, height}.
-    # Pdf lib text_wrap {x, y} = top-left of box in PDF coords (bottom-left origin).
+    # PDF text_wrap {x, y} = top-left of box in PDF coords (bottom-left origin).
     # layout_y is top-down from page top, so:
     #   pdf_top_of_box = page_height - layout_y
     pdf_y = page_height - layout_y
 
     line_height = font_ctx.font_size * 1.2
 
-    Pdf.set_text_leading(pdf, round(line_height))
+    ctx = update_backend(ctx, fn state ->
+      ctx.backend_module.set_text_leading(state, line_height)
+    end)
 
     # CRITICAL FIX: The pdf library's text_wrap checks if line_height > box_height
     # and refuses to render if true. Since set_text_leading rounds the line_height,
@@ -232,19 +278,21 @@ defmodule AtmlPdf.Renderer do
         :right -> :right
       end
 
-    Pdf.text_wrap(pdf, {x, pdf_y}, {width, adjusted_height}, text, align: align_opt)
+    update_backend(ctx, fn state ->
+      ctx.backend_module.text_wrap(state, {x, pdf_y}, {width, adjusted_height}, text, align: align_opt)
+    end)
   end
 
   # ---------------------------------------------------------------------------
   # Image rendering
   # ---------------------------------------------------------------------------
 
-  defp render_img(pdf, %Img{} = img, x, layout_y, inner_width, inner_height, text_align, vertical_align) do
+  defp render_img(ctx, %Img{} = img, x, layout_y, inner_width, inner_height, text_align, vertical_align) do
     # Skip zero-dimension images (fit with no intrinsic size info)
     if img.width <= 0.0 or img.height <= 0.0 do
-      :skip
+      ctx
     else
-      page_height = page_height(pdf)
+      page_height = ctx.page_height
 
       # Horizontal alignment (same as text)
       x_offset =
@@ -267,14 +315,15 @@ defmodule AtmlPdf.Renderer do
 
       image_path = resolve_image_path(img.src)
 
-      Pdf.add_image(pdf, {x + x_offset, pdf_y}, image_path,
-        width: img.width,
-        height: img.height
-      )
+      ctx = update_backend(ctx, fn state ->
+        ctx.backend_module.add_image(state, image_path, {x + x_offset, pdf_y}, {img.width, img.height})
+      end)
 
       if inline_image_src?(img.src) do
         File.rm(image_path)
       end
+
+      ctx
     end
   end
 
@@ -329,8 +378,8 @@ defmodule AtmlPdf.Renderer do
 
   # Draws up to 4 border lines for an element.  The `element` map must have
   # `border_top`, `border_right`, `border_bottom`, and `border_left` fields.
-  defp draw_borders(pdf, x, layout_y, width, height, element) do
-    page_height = page_height(pdf)
+  defp draw_borders(ctx, x, layout_y, width, height, element) do
+    page_height = ctx.page_height
 
     # Layout Y is top-down; convert corners to PDF bottom-left coords.
     top = page_height - layout_y
@@ -338,32 +387,28 @@ defmodule AtmlPdf.Renderer do
     left = x
     right = x + width
 
-    draw_border_line(pdf, element.border_top, {left, top}, {right, top})
-    draw_border_line(pdf, element.border_right, {right, top}, {right, bottom})
-    draw_border_line(pdf, element.border_bottom, {left, bottom}, {right, bottom})
-    draw_border_line(pdf, element.border_left, {left, top}, {left, bottom})
+    ctx
+    |> draw_border_line(element.border_top, {left, top}, {right, top})
+    |> draw_border_line(element.border_right, {right, top}, {right, bottom})
+    |> draw_border_line(element.border_bottom, {left, bottom}, {right, bottom})
+    |> draw_border_line(element.border_left, {left, top}, {left, bottom})
   end
 
-  defp draw_border_line(_pdf, :none, _from, _to), do: :ok
+  defp draw_border_line(ctx, :none, _from, _to), do: ctx
 
-  defp draw_border_line(pdf, {:border, _style, width, color}, from, to) do
+  defp draw_border_line(ctx, {:border, _style, width, color}, from, to) do
     rgb = parse_hex_color(color)
-    Pdf.set_stroke_color(pdf, rgb)
-    Pdf.set_line_width(pdf, width)
-    Pdf.line(pdf, from, to)
-    Pdf.stroke(pdf)
+
+    ctx
+    |> update_backend(fn state -> ctx.backend_module.set_stroke_color(state, rgb) end)
+    |> update_backend(fn state -> ctx.backend_module.set_line_width(state, width) end)
+    |> update_backend(fn state -> ctx.backend_module.line(state, from, to) end)
+    |> update_backend(fn state -> ctx.backend_module.stroke(state) end)
   end
 
   # ---------------------------------------------------------------------------
   # Helpers
   # ---------------------------------------------------------------------------
-
-  # Returns the current page height by querying the Pdf process.
-  # Pdf.size/1 returns %{width: w, height: h}.
-  defp page_height(pdf) do
-    %{height: h} = Pdf.size(pdf)
-    h
-  end
 
   # Parse a hex color string like "#rrggbb" or "#rgb" to an {r, g, b} tuple
   # where each component is in 0..255.

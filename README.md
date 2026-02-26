@@ -264,6 +264,50 @@ mix atml_pdf.render /data/templates/label.xml /data/output/label.pdf
 Exit codes: `0` on success, `1` on any error (missing file, parse failure,
 render failure).
 
+## Backend Configuration
+
+atml_pdf uses a pluggable backend system for PDF generation. This allows you to switch between different PDF libraries based on your needs.
+
+### Available Backends
+
+| Backend | Description | UTF-8 Support |
+|---|---|---|
+| `AtmlPdf.PdfBackend.PdfAdapter` | Default backend using the `pdf` hex package. Supports WinAnsi encoding only. | ❌ ASCII + Latin-1 |
+| `AtmlPdf.PdfBackend.ExGutenAdapter` | ExGuten backend with full UTF-8 support via TrueType fonts (coming soon). | ✅ Full Unicode |
+
+### Configuration
+
+**Application-level configuration** (affects all render calls):
+
+```elixir
+# config/config.exs
+config :atml_pdf,
+  pdf_backend: AtmlPdf.PdfBackend.PdfAdapter  # Default
+```
+
+**Runtime override** (per-document):
+
+```elixir
+# Use specific backend for this render
+AtmlPdf.render(xml, path, backend: AtmlPdf.PdfBackend.PdfAdapter)
+
+# Or when rendering to binary
+{:ok, binary} = AtmlPdf.render_binary(xml, backend: AtmlPdf.PdfBackend.PdfAdapter)
+```
+
+### Character Encoding
+
+The default `PdfAdapter` backend uses the `pdf` library which only supports **WinAnsi encoding** (ASCII + 128 Latin-1 characters). This means:
+
+- ✅ English text: `"Hello World"`
+- ✅ Common symbols: `"© ® ™ € £ ¥"`
+- ✅ Western European: `"café naïve"`
+- ❌ CJK text: `"世界 日本語 한국어"`
+- ❌ Emoji: `"🌍 📦 ✈️"`
+- ❌ Extended Unicode: `"Здравствуй Καλημέρα"`
+
+For UTF-8 support, you'll need the ExGuten backend (implementation in progress).
+
 ## API Reference
 
 ### `AtmlPdf.render/3`
@@ -275,6 +319,10 @@ render failure).
 Parses `template`, resolves layout, and writes the PDF to `path`. Returns `:ok`
 on success or `{:error, reason}` on failure.
 
+**Options:**
+- `:backend` - PDF backend module (defaults to application config or `PdfAdapter`)
+- `:compress` - Enable PDF compression (backend-specific)
+
 ### `AtmlPdf.render_binary/2`
 
 ```elixir
@@ -282,6 +330,10 @@ on success or `{:error, reason}` on failure.
 ```
 
 Same as `render/3` but returns `{:ok, binary}` instead of writing to disk.
+
+**Options:**
+- `:backend` - PDF backend module (defaults to application config or `PdfAdapter`)
+- `:compress` - Enable PDF compression (backend-specific)
 
 ## Pipeline Modules
 
