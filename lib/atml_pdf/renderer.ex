@@ -79,11 +79,12 @@ defmodule AtmlPdf.Renderer do
     inner_width = doc.width - pad_left - pad_right
 
     # Set initial font through backend
-    ctx = update_backend(ctx, fn state ->
-      backend.set_font(state, font_ctx.font_family, font_ctx.font_size,
-        bold: font_ctx.font_weight == :bold
-      )
-    end)
+    ctx =
+      update_backend(ctx, fn state ->
+        backend.set_font(state, font_ctx.font_family, font_ctx.font_size,
+          bold: font_ctx.font_weight == :bold
+        )
+      end)
 
     ctx = render_rows(ctx, doc.children, inner_x, inner_y, inner_width, doc.height, font_ctx)
 
@@ -199,11 +200,15 @@ defmodule AtmlPdf.Renderer do
 
             ctx_acc =
               if trimmed != "" do
-                ctx_acc = update_backend(ctx_acc, fn state ->
-                  ctx_acc.backend_module.set_font(state, font_ctx.font_family, font_ctx.font_size,
-                    bold: font_ctx.font_weight == :bold
-                  )
-                end)
+                ctx_acc =
+                  update_backend(ctx_acc, fn state ->
+                    ctx_acc.backend_module.set_font(
+                      state,
+                      font_ctx.font_family,
+                      font_ctx.font_size,
+                      bold: font_ctx.font_weight == :bold
+                    )
+                  end)
 
                 text_height = estimate_text_height(trimmed, inner_width, font_ctx.font_size)
 
@@ -233,7 +238,18 @@ defmodule AtmlPdf.Renderer do
             {ctx_acc, current_y}
 
           %Img{} = img ->
-            ctx_acc = render_img(ctx_acc, img, inner_x, current_y, inner_width, inner_height, col.text_align, col.vertical_align)
+            ctx_acc =
+              render_img(
+                ctx_acc,
+                img,
+                inner_x,
+                current_y,
+                inner_width,
+                inner_height,
+                col.text_align,
+                col.vertical_align
+              )
+
             {ctx_acc, current_y + img.height}
 
           %Row{} = nested_row ->
@@ -260,9 +276,10 @@ defmodule AtmlPdf.Renderer do
 
     line_height = font_ctx.font_size * 1.2
 
-    ctx = update_backend(ctx, fn state ->
-      ctx.backend_module.set_text_leading(state, line_height)
-    end)
+    ctx =
+      update_backend(ctx, fn state ->
+        ctx.backend_module.set_text_leading(state, line_height)
+      end)
 
     # CRITICAL FIX: The pdf library's text_wrap checks if line_height > box_height
     # and refuses to render if true. Since set_text_leading rounds the line_height,
@@ -279,7 +296,9 @@ defmodule AtmlPdf.Renderer do
       end
 
     update_backend(ctx, fn state ->
-      ctx.backend_module.text_wrap(state, {x, pdf_y}, {width, adjusted_height}, text, align: align_opt)
+      ctx.backend_module.text_wrap(state, {x, pdf_y}, {width, adjusted_height}, text,
+        align: align_opt
+      )
     end)
   end
 
@@ -287,7 +306,16 @@ defmodule AtmlPdf.Renderer do
   # Image rendering
   # ---------------------------------------------------------------------------
 
-  defp render_img(ctx, %Img{} = img, x, layout_y, inner_width, inner_height, text_align, vertical_align) do
+  defp render_img(
+         ctx,
+         %Img{} = img,
+         x,
+         layout_y,
+         inner_width,
+         inner_height,
+         text_align,
+         vertical_align
+       ) do
     # Skip zero-dimension images (fit with no intrinsic size info)
     if img.width <= 0.0 or img.height <= 0.0 do
       ctx
@@ -315,9 +343,15 @@ defmodule AtmlPdf.Renderer do
 
       image_path = resolve_image_path(img.src)
 
-      ctx = update_backend(ctx, fn state ->
-        ctx.backend_module.add_image(state, image_path, {x + x_offset, pdf_y}, {img.width, img.height})
-      end)
+      ctx =
+        update_backend(ctx, fn state ->
+          ctx.backend_module.add_image(
+            state,
+            image_path,
+            {x + x_offset, pdf_y},
+            {img.width, img.height}
+          )
+        end)
 
       if inline_image_src?(img.src) do
         File.rm(image_path)

@@ -6,13 +6,18 @@ defmodule Mix.Tasks.AtmlPdf.Render do
 
   ## Usage
 
-      mix atml_pdf.render TEMPLATE [OUTPUT]
+      mix atml_pdf.render TEMPLATE [OUTPUT] [OPTIONS]
 
   ## Arguments
 
   * `TEMPLATE` — path to the ATML XML template file (required)
   * `OUTPUT`   — path for the output PDF file (optional).
                  Defaults to the template path with the extension replaced by `.pdf`.
+
+  ## Options
+
+  * `--backend BACKEND` — PDF backend to use (PdfAdapter or ExGutenAdapter).
+                          Defaults to application config or PdfAdapter.
 
   ## Examples
 
@@ -21,6 +26,12 @@ defmodule Mix.Tasks.AtmlPdf.Render do
 
       # Explicit output path
       mix atml_pdf.render label.xml /tmp/label.pdf
+
+      # Use ExGuten backend for UTF-8 support
+      mix atml_pdf.render label.xml /tmp/label.pdf --backend ExGutenAdapter
+
+      # Use PdfAdapter backend (default)
+      mix atml_pdf.render label.xml /tmp/label.pdf --backend PdfAdapter
 
       # Absolute paths
       mix atml_pdf.render /path/to/template.xml /path/to/output.pdf
@@ -40,12 +51,12 @@ defmodule Mix.Tasks.AtmlPdf.Render do
     Mix.Task.run("app.start")
 
     case parse_args(args) do
-      {:ok, template_path, output_path} ->
-        render(template_path, output_path)
+      {:ok, template_path, output_path, opts} ->
+        render(template_path, output_path, opts)
 
       {:error, message} ->
         Mix.shell().error(message)
-        Mix.shell().error("Usage: mix atml_pdf.render TEMPLATE [OUTPUT]")
+        Mix.shell().error("Usage: mix atml_pdf.render TEMPLATE [OUTPUT] [--backend BACKEND]")
         exit({:shutdown, 1})
     end
   end
@@ -56,20 +67,61 @@ defmodule Mix.Tasks.AtmlPdf.Render do
 
   defp parse_args([]), do: {:error, "Error: TEMPLATE argument is required."}
 
-  defp parse_args([template]) do
-    output = Path.rootname(template) <> ".pdf"
-    {:ok, template, output}
+  defp parse_args(args) do
+    {opts, positional, _invalid} =
+      OptionParser.parse(args,
+        strict: [backend: :string],
+        aliases: [b: :backend]
+      )
+
+    backend_opt = parse_backend_opt(opts)
+
+    case positional do
+      [template] ->
+        output = Path.rootname(template) <> ".pdf"
+        {:ok, template, output, backend_opt}
+
+      [template, output | _extra] ->
+        {:ok, template, output, backend_opt}
+
+      _ ->
+        {:error, "Error: Invalid arguments."}
+    end
   end
 
-  defp parse_args([template, output | _]), do: {:ok, template, output}
+  defp parse_backend_opt(opts) do
+    case Keyword.get(opts, :backend) do
+      nil ->
+        []
+
+      "PdfAdapter" ->
+        [backend: AtmlPdf.PdfBackend.PdfAdapter]
+
+      "ExGutenAdapter" ->
+        [backend: AtmlPdf.PdfBackend.ExGutenAdapter]
+
+      backend ->
+        Mix.shell().info("Unknown backend: #{backend}, using default")
+        []
+    end
+  end
 
   # ---------------------------------------------------------------------------
   # Render
   # ---------------------------------------------------------------------------
 
-  defp render(template_path, output_path) do
+  defp render(template_path, output_path, opts) do
+    backend_name =
+      case Keyword.get(opts, :backend) do
+        AtmlPdf.PdfBackend.PdfAdapter -> "PdfAdapter"
+        AtmlPdf.PdfBackend.ExGutenAdapter -> "ExGutenAdapter"
+        nil -> "default"
+        other -> inspect(other)
+      end
+
     with {:read, {:ok, xml}} <- {:read, File.read(template_path)},
-         {:render, :ok} <- {:render, AtmlPdf.render(xml, output_path)} do
+         {:render, :ok} <- {:render, AtmlPdf.render(xml, output_path, opts)} do
+      Mix.shell().info("Backend: #{backend_name}")
       Mix.shell().info("Written: #{output_path}")
     else
       {:read, {:error, reason}} ->

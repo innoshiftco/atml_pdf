@@ -328,7 +328,13 @@ defmodule AtmlPdf.Layout do
     col_inner_height = col_height - col.padding_top - col.padding_bottom
 
     resolved_children =
-      resolve_col_children(col.children, col_inner_width, col_inner_height, resolved_font_ctx, col)
+      resolve_col_children(
+        col.children,
+        col_inner_width,
+        col_inner_height,
+        resolved_font_ctx,
+        col
+      )
 
     %{
       col

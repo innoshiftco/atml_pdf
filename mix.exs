@@ -23,6 +23,7 @@ defmodule AtmlPdf.MixProject do
     [
       {:pdf, "~> 0.7"},
       {:sweet_xml, "~> 0.7"},
+      {:ex_guten, "~> 0.1"},
       {:barlix, "~> 0.6", only: :test}
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}

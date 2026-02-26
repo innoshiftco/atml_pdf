@@ -270,10 +270,10 @@ atml_pdf uses a pluggable backend system for PDF generation. This allows you to 
 
 ### Available Backends
 
-| Backend | Description | UTF-8 Support |
-|---|---|---|
-| `AtmlPdf.PdfBackend.PdfAdapter` | Default backend using the `pdf` hex package. Supports WinAnsi encoding only. | ❌ ASCII + Latin-1 |
-| `AtmlPdf.PdfBackend.ExGutenAdapter` | ExGuten backend with full UTF-8 support via TrueType fonts (coming soon). | ✅ Full Unicode |
+| Backend | Description | UTF-8 Support | Status |
+|---|---|---|---|
+| `AtmlPdf.PdfBackend.PdfAdapter` | Default backend using the `pdf` hex package. Supports WinAnsi encoding only. | ❌ ASCII + Latin-1 | ✅ Stable |
+| `AtmlPdf.PdfBackend.ExGutenAdapter` | ExGuten backend with full UTF-8 support and immutable API. | ✅ Full Unicode | ✅ Available |
 
 ### Configuration
 
@@ -282,17 +282,24 @@ atml_pdf uses a pluggable backend system for PDF generation. This allows you to 
 ```elixir
 # config/config.exs
 config :atml_pdf,
-  pdf_backend: AtmlPdf.PdfBackend.PdfAdapter  # Default
+  pdf_backend: AtmlPdf.PdfBackend.PdfAdapter  # Default (WinAnsi only)
+
+# Or use ExGuten for UTF-8 support
+config :atml_pdf,
+  pdf_backend: AtmlPdf.PdfBackend.ExGutenAdapter
 ```
 
 **Runtime override** (per-document):
 
 ```elixir
-# Use specific backend for this render
+# Use PdfAdapter (WinAnsi encoding)
 AtmlPdf.render(xml, path, backend: AtmlPdf.PdfBackend.PdfAdapter)
 
+# Use ExGuten (UTF-8 support)
+AtmlPdf.render(xml, path, backend: AtmlPdf.PdfBackend.ExGutenAdapter)
+
 # Or when rendering to binary
-{:ok, binary} = AtmlPdf.render_binary(xml, backend: AtmlPdf.PdfBackend.PdfAdapter)
+{:ok, binary} = AtmlPdf.render_binary(xml, backend: AtmlPdf.PdfBackend.ExGutenAdapter)
 ```
 
 ### Character Encoding
@@ -306,7 +313,23 @@ The default `PdfAdapter` backend uses the `pdf` library which only supports **Wi
 - ❌ Emoji: `"🌍 📦 ✈️"`
 - ❌ Extended Unicode: `"Здравствуй Καλημέρα"`
 
-For UTF-8 support, you'll need the ExGuten backend (implementation in progress).
+**The `ExGutenAdapter` backend supports full UTF-8:**
+
+- ✅ All of the above (English, symbols, Western European)
+- ✅ Special characters and symbols: `"✓ ✗ → ←"`
+- ✅ Extended Latin characters: `"Müller señor"`
+- ✅ CJK characters: `"世界 日本語 한국어"` (with appropriate fonts)
+- ✅ Cyrillic and Greek: `"Здравствуй Καλημέρα"`
+
+To use UTF-8 characters, simply configure the ExGuten backend:
+
+```elixir
+# In your config
+config :atml_pdf, pdf_backend: AtmlPdf.PdfBackend.ExGutenAdapter
+
+# Or per-document
+AtmlPdf.render(xml, path, backend: AtmlPdf.PdfBackend.ExGutenAdapter)
+```
 
 ## API Reference
 

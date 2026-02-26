@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document width="400pt" height="600pt" font-family="NotoSans" font-size="8pt" padding="12pt">
+  <!-- Row 1: Header — Logo | MAIN | (empty) -->
+  <row height="50pt" border="solid 1pt #000000">
+    <col width="30%" vertical-align="center" text-align="center" padding="4pt" border-right="solid 1pt #000000">
+      <img src="examples/logo.png" width="80pt" height="35pt"/>
+    </col>
+    <col width="40%" vertical-align="center" text-align="center" padding="4pt" font-size="24pt" font-weight="bold" border-right="solid 1pt #000000">
+      MAIN
+    </col>
+    <col width="30%"/>
+  </row>
+  <!-- Row 2: Full-width barcode -->
+  <row height="60pt" border-bottom="solid 1pt #000000" border-left="solid 1pt #000000" border-right="solid 1pt #000000">
+    <col width="fill" vertical-align="center" text-align="center" padding="8pt 16pt">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAARQAAABICAAAAAASIFWdAAAAAklEQVR4nGKkkSsAAACtSURBVO3QwQqEMAwE0P7/T7uKlCY6eF3BNwdb05KUNza5Zfz7AW8MlBAoIVBCoIQ8oIw9x/fc1+r8O8/nrV7v6+q07q619pnz1txa66+59u/nvWOdWatQoECBAgUKFChQoECBAgUKFChQoECBAgUKFChQoECBAgUKFChQoECBAgUKFChQoECBAgUKFChQoECBAgUKFChQoECBAgUKlLegfDdQQqCEQAmBEgIl5Aek0S+e3s2RjAAAAABJRU5ErkJggg==" width="fill" height="40pt"/>
+    </col>
+  </row>
+  <!-- Row 3: Số đơn hàng | Mã vận đơn -->
+  <row height="28pt" border-bottom="solid 1pt #000000" border-left="solid 1pt #000000" border-right="solid 1pt #000000">
+    <col width="55%" padding="4pt 8pt" vertical-align="center" text-align="center" font-size="10pt" border-right="solid 1pt #000000">
+      ORD-2024-001235
+    </col>
+    <col width="45%" padding="4pt 8pt" vertical-align="center" text-align="center" font-size="10pt">
+      XDE001235
+    </col>
+  </row>
+  <!-- Row 4: Người mua -->
+  <row border-bottom="solid 1pt #000000" border-left="solid 1pt #000000" border-right="solid 1pt #000000">
+    <col width="40pt" vertical-align="center" text-align="center" font-size="7pt" border-right="solid 1pt #000000" padding="4pt">
+      Người mua
+    </col>
+    <col width="fill" padding="6pt 8pt">
+      <!-- Tên và loại dịch vụ -->
+      <row>
+        <col width="fill" font-size="14pt" font-weight="bold">
+          Nguyễn Văn An
+        </col>
+        <col width="fit" font-size="10pt" font-weight="bold" text-align="right">
+          Nhanh
+        </col>
+      </row>
+      <!-- Địa chỉ -->
+      <row>
+        <col font-size="9pt" padding-top="2pt">
+          18 Đường Lê Lợi, Phường Bến Nghé, Quận 1
+        </col>
+      </row>
+      <!-- Quận và Thành phố -->
+      <row>
+        <col width="50%" font-size="11pt" font-weight="bold" padding-top="6pt">
+          Quận 1
+        </col>
+        <col width="50%" padding-top="6pt">
+          <row>
+            <col font-size="11pt" font-weight="bold">
+              Hồ Chí Minh
+            </col>
+          </row>
+          <row>
+            <col font-size="9pt">
+              Việt Nam 700000
+            </col>
+          </row>
+        </col>
+      </row>
+    </col>
+  </row>
+  <!-- Row 5: Người bán -->
+  <row border-bottom="solid 1pt #000000" border-left="solid 1pt #000000" border-right="solid 1pt #000000">
+    <col width="40pt" vertical-align="center" text-align="center" font-size="7pt" border-right="solid 1pt #000000" padding="4pt">
+      Người bán
+    </col>
+    <col width="fill" padding="6pt 8pt">
+      <!-- Tên cửa hàng -->
+      <row>
+        <col font-size="14pt" font-weight="bold">
+          Cửa Hàng Điện Tử Phương Nam
+        </col>
+      </row>
+      <!-- Địa chỉ -->
+      <row>
+        <col font-size="9pt" padding-top="2pt">
+          45 Đường Nguyễn Huệ, Phường Bến Nghé
+        </col>
+      </row>
+      <!-- Quận và Thành phố -->
+      <row>
+        <col width="50%" font-size="11pt" font-weight="bold" padding-top="6pt">
+          Quận 1
+        </col>
+        <col width="50%" padding-top="6pt">
+          <row>
+            <col font-size="11pt" font-weight="bold">
+              Hồ Chí Minh
+            </col>
+          </row>
+          <row>
+            <col font-size="9pt">
+              Việt Nam 700000
+            </col>
+          </row>
+        </col>
+      </row>
+    </col>
+  </row>
+  <!-- Row 6: Mã vạch | Mã QR | Tiền thu hộ -->
+  <row height="90pt" border-bottom="solid 1pt #000000" border-left="solid 1pt #000000" border-right="solid 1pt #000000">
+    <col width="40%" vertical-align="center" text-align="center" padding="6pt" border-right="solid 1pt #000000">
+      <row>
+        <col text-align="center" vertical-align="center">
+          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIwAAAAwCAAAAADmo83sAAAAAklEQVR4nGKkkSsAAABgSURBVO3OSwrAIAwFwHf/S1uqkX7AbetiHgRiImHSNkr+BtwDs8oLk5yTjDZ930fVV6XNVa/xJ21UdXn+r3fmqesqDAwMDAwMDAwMDAwMDAwMDAwMDAzMh5h/A7PKVpgD+/pvgOVWS5IAAAAASUVORK5CYII=" width="fill" height="40pt"/>
+        </col>
+      </row>
+      <row>
+        <col text-align="center" font-size="9pt" padding-top="8pt">
+          XDE001235
+        </col>
+      </row>
+    </col>
+    <col width="30%" vertical-align="center" text-align="center" padding="6pt" border-right="solid 1pt #000000">
+      <img src="examples/qr.png" width="70pt" height="70pt"/>
+    </col>
+    <col width="30%" vertical-align="center" text-align="center" padding="6pt">
+      <row>
+        <col font-size="16pt">
+          VND
+        </col>
+      </row>
+      <row>
+        <col font-size="16pt" font-weight="bold" padding-top="2pt">
+          10.250.000
+        </col>
+      </row>
+    </col>
+  </row>
+  <!-- Row 7: Hướng dẫn giao hàng -->
+  <row height="28pt" border-bottom="solid 1pt #000000" border-left="solid 1pt #000000" border-right="solid 1pt #000000">
+    <col width="fill" padding="4pt 8pt" vertical-align="center" font-size="9pt">
+      Hướng dẫn giao hàng: Gọi trước khi giao. Không để ngoài cửa.
+    </col>
+  </row>
+  <!-- Row 8: Danh sách sản phẩm -->
+  <row height="fill" border="solid 1pt #000000">
+    <col width="fill" padding="6pt 8pt">
+      <row>
+        <col font-size="12pt" font-weight="bold">
+          DANH SÁCH SẢN PHẨM:
+        </col>
+      </row>
+      <row>
+        <col font-size="9pt" padding-top="4pt">
+          2x Khăn tắm Lotus 100% Cotton cao cấp mềm mại thấm hút nước tốt
+        </col>
+      </row>
+      <row>
+        <col font-size="9pt" padding-top="4pt">
+          1x Sạc dự phòng 20000mAh tích hợp cáp USB 4 đầu
+        </col>
+      </row>
+      <row>
+        <col font-size="9pt" padding-top="4pt">
+          3x Cáp HDMI 2.0 độ phân giải 4K tốc độ 18Gbps dài 2 mét
+        </col>
+      </row>
+      <row>
+        <col font-size="9pt" padding-top="4pt">
+          1x Cáp sạc USB-C hỗ trợ Power Delivery 100W dài 2 mét
+        </col>
+      </row>
+      <row>
+        <col font-size="9pt" padding-top="4pt">
+          5x Tai nghe Bluetooth không dây chống ồn kèm hộp sạc 30 giờ
+        </col>
+      </row>
+    </col>
+  </row>
+</document>
