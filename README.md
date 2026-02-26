@@ -51,7 +51,7 @@ xml = """
   <row height="fill">
     <col width="fill" vertical-align="center" text-align="center"
          font-size="14pt" font-weight="bold">
-      AIR WAYBILL
+      SHIPPING LABEL
     </col>
   </row>
 </document>
@@ -82,7 +82,7 @@ Every ATML template has a single `<document>` root. Layout is expressed as alter
     </col>
     <col width="fill" vertical-align="center" font-size="14pt" font-weight="bold"
          text-align="center">
-      AIR WAYBILL
+      SHIPPING LABEL
     </col>
   </row>
 
@@ -242,20 +242,24 @@ deps:
 writing any Elixir code.
 
 ```
-mix atml_pdf.render TEMPLATE [OUTPUT]
+mix atml_pdf.render TEMPLATE [OUTPUT] [--backend BACKEND]
 ```
 
 | Argument | Required | Description |
 |---|---|---|
 | `TEMPLATE` | yes | Path to the ATML XML template file |
 | `OUTPUT` | no | Destination PDF path. Defaults to the template path with `.pdf` extension |
+| `--backend` | no | PDF backend: `PdfAdapter` (default) or `ExGutenAdapter` (UTF-8) |
 
 ```bash
 # Minimal — output written as label.pdf in the same directory
 mix atml_pdf.render label.xml
 
 # Explicit output path
-mix atml_pdf.render templates/waybill.xml /tmp/output.pdf
+mix atml_pdf.render templates/label.xml /tmp/output.pdf
+
+# Use ExGuten backend for UTF-8 / multilingual text
+mix atml_pdf.render label.xml /tmp/label.pdf --backend ExGutenAdapter
 
 # Absolute paths work too
 mix atml_pdf.render /data/templates/label.xml /data/output/label.pdf
@@ -302,30 +306,37 @@ AtmlPdf.render(xml, path, backend: AtmlPdf.PdfBackend.ExGutenAdapter)
 {:ok, binary} = AtmlPdf.render_binary(xml, backend: AtmlPdf.PdfBackend.ExGutenAdapter)
 ```
 
-### Character Encoding
+### Font registration (ExGutenAdapter)
 
-The default `PdfAdapter` backend uses the `pdf` library which only supports **WinAnsi encoding** (ASCII + 128 Latin-1 characters). This means:
+Every `.ttf` file in `priv/fonts/` is registered automatically at startup
+using its filename stem as the font name. The bundled fonts are:
 
-- ✅ English text: `"Hello World"`
-- ✅ Common symbols: `"© ® ™ € £ ¥"`
-- ✅ Western European: `"café naïve"`
-- ❌ CJK text: `"世界 日本語 한국어"`
-- ❌ Emoji: `"🌍 📦 ✈️"`
-- ❌ Extended Unicode: `"Здравствуй Καλημέρα"`
+| File | Registered as | Coverage |
+|---|---|---|
+| `NotoSans-Regular.ttf` | `"NotoSans"`, `"NotoSans-Regular"` | Latin, Vietnamese, extended Latin |
+| `NotoSansThai-Regular.ttf` | `"NotoSansThai-Regular"` | Thai script |
 
-**The `ExGutenAdapter` backend supports full UTF-8:**
+Drop any additional `.ttf` into `priv/fonts/` and it becomes available as a
+`font-family` value in ATML — no code changes required.
 
-- ✅ All of the above (English, symbols, Western European)
-- ✅ Special characters and symbols: `"✓ ✗ → ←"`
-- ✅ Extended Latin characters: `"Müller señor"`
-- ✅ CJK characters: `"世界 日本語 한국어"` (with appropriate fonts)
-- ✅ Cyrillic and Greek: `"Здравствуй Καλημέρα"`
-
-To use UTF-8 characters, simply configure the ExGuten backend:
+For fonts outside `priv/fonts/`, register them via application config:
 
 ```elixir
-# In your config
-config :atml_pdf, pdf_backend: AtmlPdf.PdfBackend.ExGutenAdapter
+config :atml_pdf, :fonts, [
+  {"NotoSansCJK-Regular", "/usr/share/fonts/NotoSansCJK-Regular.ttf"}
+]
+```
+
+All registered TTF fonts are automatically included in the fallback glyph chain,
+so characters not covered by the primary font are rendered by the first fallback
+that supports them.
+
+### Character encoding
+
+| Backend | Encoding | Supports |
+|---|---|---|
+| `PdfAdapter` | WinAnsi (ASCII + Latin-1) | English, Western European, common symbols |
+| `ExGutenAdapter` | Full UTF-8 | All of the above + Vietnamese, Thai, CJK, Cyrillic, Greek, emoji |
 
 # Or per-document
 AtmlPdf.render(xml, path, backend: AtmlPdf.PdfBackend.ExGutenAdapter)
