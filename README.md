@@ -24,7 +24,7 @@ Add `atml_pdf` to your dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:atml_pdf, "~> 0.1.0"}
+    {:atml_pdf, "~> 1.0"}
   ]
 end
 ```
