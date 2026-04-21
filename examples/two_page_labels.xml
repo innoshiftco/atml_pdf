@@ -8,7 +8,7 @@
   Render:
     mix atml_pdf.render examples/two_page_labels.xml
 -->
-<document width="400pt" height="600pt" font-family="Helvetica" font-size="8pt" padding="12pt">
+<document page-width="400pt" page-height="600pt" font-family="Helvetica" font-size="8pt" padding="12pt">
 
   <!-- ═══════════════════════════════════════════════════════ LABEL 1 (Page 1) -->
 
