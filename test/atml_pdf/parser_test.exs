@@ -1,7 +1,7 @@
 defmodule AtmlPdf.ParserTest do
   use ExUnit.Case, async: true
 
-  alias AtmlPdf.Element.{Col, Document, Img, Row}
+  alias AtmlPdf.Element.{Break, Col, Document, Img, Row}
   alias AtmlPdf.Parser
 
   # ---------------------------------------------------------------------------
@@ -92,12 +92,12 @@ defmodule AtmlPdf.ParserTest do
 
   describe "parse/1 – valid document" do
     test "minimal document with required attributes" do
-      xml = ~s|<document width="400pt" height="600pt"></document>|
-      assert {:ok, %Document{width: {:pt, 400.0}, height: {:pt, 600.0}}} = Parser.parse(xml)
+      xml = ~s|<document page-width="400pt" page-height="600pt"></document>|
+      assert {:ok, %Document{page_width: {:pt, 400.0}, page_height: {:pt, 600.0}}} = Parser.parse(xml)
     end
 
     test "document font defaults" do
-      xml = ~s|<document width="10pt" height="10pt"></document>|
+      xml = ~s|<document page-width="10pt" page-height="10pt"></document>|
       assert {:ok, doc} = Parser.parse(xml)
       assert doc.font_family == "Helvetica"
       assert doc.font_size == 8.0
@@ -106,7 +106,7 @@ defmodule AtmlPdf.ParserTest do
 
     test "document explicit font attributes" do
       xml =
-        ~s|<document width="10pt" height="10pt" font-family="Arial" font-size="12pt" font-weight="bold"></document>|
+        ~s|<document page-width="10pt" page-height="10pt" font-family="Arial" font-size="12pt" font-weight="bold"></document>|
 
       assert {:ok, doc} = Parser.parse(xml)
       assert doc.font_family == "Arial"
@@ -115,44 +115,44 @@ defmodule AtmlPdf.ParserTest do
     end
 
     test "document padding shorthand" do
-      xml = ~s|<document width="10pt" height="10pt" padding="4pt"></document>|
+      xml = ~s|<document page-width="10pt" page-height="10pt" padding="4pt"></document>|
       assert {:ok, doc} = Parser.parse(xml)
       assert doc.padding == {4.0, 4.0, 4.0, 4.0}
     end
 
     test "document with a row child" do
-      xml = ~s|<document width="10pt" height="10pt"><row></row></document>|
+      xml = ~s|<document page-width="10pt" page-height="10pt"><row></row></document>|
       assert {:ok, doc} = Parser.parse(xml)
       assert [%Row{}] = doc.children
     end
 
     test "row with col child" do
-      xml = ~s|<document width="10pt" height="10pt"><row><col>hello</col></row></document>|
+      xml = ~s|<document page-width="10pt" page-height="10pt"><row><col>hello</col></row></document>|
       assert {:ok, doc} = Parser.parse(xml)
       assert [%Row{children: [%Col{children: ["hello"]}]}] = doc.children
     end
 
     test "row default dimensions" do
-      xml = ~s|<document width="10pt" height="10pt"><row></row></document>|
+      xml = ~s|<document page-width="10pt" page-height="10pt"><row></row></document>|
       assert {:ok, doc} = Parser.parse(xml)
       assert [%Row{height: :fit, width: :fill}] = doc.children
     end
 
     test "row explicit height fill" do
-      xml = ~s|<document width="10pt" height="10pt"><row height="fill"></row></document>|
+      xml = ~s|<document page-width="10pt" page-height="10pt"><row height="fill"></row></document>|
       assert {:ok, doc} = Parser.parse(xml)
       assert [%Row{height: :fill}] = doc.children
     end
 
     test "row explicit height in pt" do
-      xml = ~s|<document width="10pt" height="10pt"><row height="60pt"></row></document>|
+      xml = ~s|<document page-width="10pt" page-height="10pt"><row height="60pt"></row></document>|
       assert {:ok, doc} = Parser.parse(xml)
       assert [%Row{height: {:pt, 60.0}}] = doc.children
     end
 
     test "row border-bottom shorthand" do
       xml =
-        ~s|<document width="10pt" height="10pt"><row border-bottom="solid 1pt #000000"></row></document>|
+        ~s|<document page-width="10pt" page-height="10pt"><row border-bottom="solid 1pt #000000"></row></document>|
 
       assert {:ok, doc} = Parser.parse(xml)
 
@@ -162,7 +162,7 @@ defmodule AtmlPdf.ParserTest do
 
     test "row border shorthand applies to all sides, per-side overrides" do
       xml = """
-      <document width="10pt" height="10pt">
+      <document page-width="10pt" page-height="10pt">
         <row border="solid 1pt #000000" border-top="none"></row>
       </document>
       """
@@ -176,20 +176,20 @@ defmodule AtmlPdf.ParserTest do
     end
 
     test "col default dimensions" do
-      xml = ~s|<document width="10pt" height="10pt"><row><col></col></row></document>|
+      xml = ~s|<document page-width="10pt" page-height="10pt"><row><col></col></row></document>|
       assert {:ok, doc} = Parser.parse(xml)
       assert [%Row{children: [%Col{width: :fill, height: :fill}]}] = doc.children
     end
 
     test "col explicit width percentage" do
-      xml = ~s|<document width="10pt" height="10pt"><row><col width="50%"></col></row></document>|
+      xml = ~s|<document page-width="10pt" page-height="10pt"><row><col width="50%"></col></row></document>|
       assert {:ok, doc} = Parser.parse(xml)
       assert [%Row{children: [%Col{width: {:percent, 50.0}}]}] = doc.children
     end
 
     test "col text-align and vertical-align" do
       xml = """
-      <document width="10pt" height="10pt">
+      <document page-width="10pt" page-height="10pt">
         <row><col text-align="center" vertical-align="bottom"></col></row>
       </document>
       """
@@ -200,7 +200,7 @@ defmodule AtmlPdf.ParserTest do
 
     test "col font override" do
       xml = """
-      <document width="10pt" height="10pt">
+      <document page-width="10pt" page-height="10pt">
         <row><col font-size="14pt" font-weight="bold"></col></row>
       </document>
       """
@@ -210,7 +210,7 @@ defmodule AtmlPdf.ParserTest do
     end
 
     test "col nil font fields when not specified (inheritable)" do
-      xml = ~s|<document width="10pt" height="10pt"><row><col></col></row></document>|
+      xml = ~s|<document page-width="10pt" page-height="10pt"><row><col></col></row></document>|
       assert {:ok, doc} = Parser.parse(xml)
 
       assert [%Row{children: [%Col{font_family: nil, font_size: nil, font_weight: nil}]}] =
@@ -219,7 +219,7 @@ defmodule AtmlPdf.ParserTest do
 
     test "col padding per-side override" do
       xml = """
-      <document width="10pt" height="10pt">
+      <document page-width="10pt" page-height="10pt">
         <row><col padding="4pt" padding-top="8pt"></col></row>
       </document>
       """
@@ -230,7 +230,7 @@ defmodule AtmlPdf.ParserTest do
 
     test "img with src" do
       xml = """
-      <document width="10pt" height="10pt">
+      <document page-width="10pt" page-height="10pt">
         <row><col><img src="/logo.png" width="60pt" height="40pt" /></col></row>
       </document>
       """
@@ -251,7 +251,7 @@ defmodule AtmlPdf.ParserTest do
 
     test "img defaults to fit dimensions" do
       xml = """
-      <document width="10pt" height="10pt">
+      <document page-width="10pt" page-height="10pt">
         <row><col><img src="base64:abc" /></col></row>
       </document>
       """
@@ -262,7 +262,7 @@ defmodule AtmlPdf.ParserTest do
 
     test "col min-width and max-width" do
       xml = """
-      <document width="10pt" height="10pt">
+      <document page-width="10pt" page-height="10pt">
         <row><col min-width="20pt" max-width="100pt"></col></row>
       </document>
       """
@@ -275,7 +275,7 @@ defmodule AtmlPdf.ParserTest do
 
     test "nested row inside col" do
       xml = """
-      <document width="10pt" height="10pt">
+      <document page-width="10pt" page-height="10pt">
         <row>
           <col>
             <row><col>inner</col></row>
@@ -292,7 +292,7 @@ defmodule AtmlPdf.ParserTest do
 
     test "whitespace-only text nodes are dropped" do
       xml = """
-      <document width="10pt" height="10pt">
+      <document page-width="10pt" page-height="10pt">
         <row>
           <col>  </col>
         </row>
@@ -316,20 +316,39 @@ defmodule AtmlPdf.ParserTest do
     end
 
     test "returns error for non-row child of document" do
-      xml = ~s|<document width="10pt" height="10pt"><col></col></document>|
+      xml = ~s|<document page-width="10pt" page-height="10pt"><col></col></document>|
       assert {:error, msg} = Parser.parse(xml)
       assert msg =~ "<col>"
     end
 
+    test "accepts <break> as direct child of document" do
+      xml = """
+      <document page-width="100pt" page-height="200pt">
+        <row height="50pt"><col width="fill">before</col></row>
+        <break />
+        <row height="50pt"><col width="fill">after</col></row>
+      </document>
+      """
+
+      assert {:ok, doc} = Parser.parse(xml)
+      assert [%Row{}, %Break{}, %Row{}] = doc.children
+    end
+
+    test "document with only a break is valid" do
+      xml = ~s|<document page-width="100pt" page-height="200pt"><break /></document>|
+      assert {:ok, doc} = Parser.parse(xml)
+      assert [%Break{}] = doc.children
+    end
+
     test "returns error for non-col child of row" do
-      xml = ~s|<document width="10pt" height="10pt"><row><img src="x" /></row></document>|
+      xml = ~s|<document page-width="10pt" page-height="10pt"><row><img src="x" /></row></document>|
       assert {:error, msg} = Parser.parse(xml)
       assert msg =~ "<img>"
     end
 
     test "returns error for col directly inside col" do
       xml = """
-      <document width="10pt" height="10pt">
+      <document page-width="10pt" page-height="10pt">
         <row><col><col></col></col></row>
       </document>
       """
@@ -344,20 +363,20 @@ defmodule AtmlPdf.ParserTest do
   # ---------------------------------------------------------------------------
 
   describe "parse/1 – missing required attributes" do
-    test "missing document width" do
-      xml = ~s|<document height="10pt"></document>|
+    test "missing document page-width" do
+      xml = ~s|<document page-height="10pt"></document>|
       assert {:error, msg} = Parser.parse(xml)
-      assert msg =~ "width"
+      assert msg =~ "page-width"
     end
 
-    test "missing document height" do
-      xml = ~s|<document width="10pt"></document>|
+    test "missing document page-height" do
+      xml = ~s|<document page-width="10pt"></document>|
       assert {:error, msg} = Parser.parse(xml)
-      assert msg =~ "height"
+      assert msg =~ "page-height"
     end
 
     test "missing img src" do
-      xml = ~s|<document width="10pt" height="10pt"><row><col><img /></col></row></document>|
+      xml = ~s|<document page-width="10pt" page-height="10pt"><row><col><img /></col></row></document>|
       assert {:error, msg} = Parser.parse(xml)
       assert msg =~ "src"
     end

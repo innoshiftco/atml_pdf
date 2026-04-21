@@ -9,8 +9,8 @@ defmodule AtmlPdf.Element.Document do
   alias AtmlPdf.Element.Types
 
   @type t :: %__MODULE__{
-          width: Types.dimension(),
-          height: Types.dimension(),
+          page_width: Types.dimension(),
+          page_height: Types.dimension(),
           padding: Types.spacing(),
           font_family: String.t(),
           font_size: number(),
@@ -18,8 +18,8 @@ defmodule AtmlPdf.Element.Document do
           children: list()
         }
 
-  defstruct width: nil,
-            height: nil,
+  defstruct page_width: nil,
+            page_height: nil,
             padding: {0, 0, 0, 0},
             font_family: "Helvetica",
             font_size: 8,

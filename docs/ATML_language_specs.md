@@ -20,6 +20,7 @@
    - [`<row>`](#row)
    - [`<col>`](#col)
    - [`<img>`](#img)
+   - [`<break>`](#break)
 6. [Inheritance](#inheritance)
 7. [Constraint Resolution](#constraint-resolution)
 8. [Full Example](#full-example)
@@ -41,7 +42,7 @@ Every ATML file must begin with an XML declaration followed by a single `<docume
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<document width="400pt" height="600pt">
+<document page-width="400pt" page-height="600pt">
 
   <row>
     <col> ... </col>
@@ -68,20 +69,22 @@ The layout model alternates strictly between rows and columns. The valid parent�
 
 ```
 <document>
-  └── <row>
-        └── <col>
-              ├── text / <img>
-              └── <row>              ← must interpose a row before nesting cols
-                    └── <col>
-                          └── text / <img>
+  ├── <row>
+  │     └── <col>
+  │           ├── text / <img>
+  │           └── <row>              ← must interpose a row before nesting cols
+  │                 └── <col>
+  │                       └── text / <img>
+  └── <break />                      ← forces a page break between rows
 ```
 
 **Rules:**
 
-- `<document>` may only contain `<row>` children.
+- `<document>` may only contain `<row>` and `<break>` children.
 - `<row>` may only contain `<col>` children.
 - `<col>` may contain text, `<img>`, or `<row>` children. Mixed content (text alongside child elements) is permitted.
 - A `<col>` **cannot** be a direct child of another `<col>`. This is a parse error.
+- `<break>` has no attributes and no children. It is a self-closing tag.
 
 ---
 
@@ -163,6 +166,21 @@ border-left="dotted 2px #aaaaaa"
 
 ---
 
+### Colors
+
+Used for `color` (text color) and `background-color` (fill color).
+
+| Format | Example | Description |
+|---|---|---|
+| 6-digit hex | `#rrggbb` | Full hex color |
+| 3-digit hex | `#rgb` | Shorthand hex (expanded to 6-digit) |
+
+- `color` applies to text content in `<col>` elements.
+- `background-color` applies to `<row>` and `<col>` elements, filling the entire bounding box.
+- Neither attribute is inherited — set explicitly on each element.
+
+---
+
 ### Fonts
 
 All font attributes cascade from `<document>` → `<row>` → `<col>`. A child element uses the nearest ancestor's value unless it declares its own override.
@@ -188,13 +206,13 @@ All font attributes cascade from `<document>` → `<row>` → `<col>`. A child e
 
 ### `<document>`
 
-The root element. Defines the physical dimensions of the label canvas. Exactly one per document.
+The root element. Defines the physical dimensions of each page. Exactly one per document.
 
 | Attribute | Type | Default | Notes |
 |---|---|---|---|
-| `width` | dimension | **required** | Physical document width |
-| `height` | dimension | **required** | Physical document height |
-| `padding` | spacing | `0` | Outer inset applied to all direct child rows |
+| `page-width` | dimension | **required** | Physical page width |
+| `page-height` | dimension | **required** | Physical page height |
+| `padding` | spacing | `0` | Outer inset applied to all direct child rows on every page |
 | `font-family` | string | `"Helvetica"` | Inherited by all descendants |
 | `font-size` | pt | `8pt` | Inherited by all descendants |
 | `font-weight` | `normal` \| `bold` | `normal` | Inherited by all descendants |
@@ -224,6 +242,7 @@ A horizontal container. Children are laid out left to right. Rows stack vertical
 | `border-bottom` | border | — | Bottom side override |
 | `border-left` | border | — | Left side override |
 | `vertical-align` | `top` \| `center` \| `bottom` | `top` | Default vertical alignment for child col content |
+| `background-color` | color | — | Background fill color (hex) |
 
 ---
 
@@ -254,6 +273,8 @@ A vertical cell within a `<row>`. Columns are laid out horizontally within their
 | `font-weight` | `normal` \| `bold` | inherited | Font weight override |
 | `text-align` | `left` \| `center` \| `right` | `left` | Horizontal text alignment |
 | `vertical-align` | `top` \| `center` \| `bottom` | `top` | Vertical alignment of content |
+| `color` | color | — | Text color (hex) |
+| `background-color` | color | — | Background fill color (hex) |
 
 ---
 
@@ -283,6 +304,34 @@ An inline image element. Must be a direct child of `<col>`.
 src="/path/to/logo.png"
 src="base64:iVBORw0KGgoAAAANS..."
 ```
+
+---
+
+### `<break>`
+
+A page break marker. Must be a direct child of `<document>`. When the renderer encounters a `<break>`, it ends the current page and starts a new one. Rows after the `<break>` are rendered from the top of the next page.
+
+`<break>` has **no attributes** and **no children**. It is always self-closing.
+
+```xml
+<document page-width="400pt" page-height="600pt">
+
+  <!-- Label 1 — rendered on page 1 -->
+  <row height="50pt"> ... </row>
+  <row height="fill"> ... </row>
+
+  <break />
+
+  <!-- Label 2 — rendered on page 2 -->
+  <row height="50pt"> ... </row>
+  <row height="fill"> ... </row>
+
+</document>
+```
+
+**Behaviour with `multiple_page: false`:** when the renderer is configured for single-page output, `<break>` is silently ignored and all rows are clipped to the first page.
+
+**`fill` height scoping:** `<break>` acts as a boundary for `fill` height resolution. Each page segment resolves its `fill` rows independently against the full page height, so a `fill` row on page 1 is not affected by rows on page 2.
 
 ---
 
@@ -320,8 +369,8 @@ When `min-*` / `max-*` are combined with a base dimension, the following order a
 ## Full Example
 
 ```xml
-<?Xml version="1.0" encoding="UTF-8"?>
-<document width="400pt" height="600pt" font-family="Helvetica" font-size="8pt">
+<?xml version="1.0" encoding="UTF-8"?>
+<document page-width="400pt" page-height="600pt" font-family="Helvetica" font-size="8pt">
 
   <!-- Header: logo + title -->
   <row height="60pt" border-bottom="solid 1pt #000000">
@@ -414,4 +463,5 @@ When `min-*` / `max-*` are combined with a base dimension, the following order a
 | **Font weight** | keyword | `normal`, `bold` |
 | **Text align** | keyword | `left`, `center`, `right` |
 | **Vertical align** | keyword | `top`, `center`, `bottom` |
+| **Color** | `#rrggbb` or `#rgb` | `#ff0000`, `#f00` |
 | **Image src** | path or base64 | `/path/to/file.png`, `base64:<data>` |

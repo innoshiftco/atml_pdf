@@ -4,13 +4,13 @@ An Elixir library that parses **ATML** — an XML-based format for defining labe
 
 ## Overview
 
-ATML describes a single label as a tree of rows and columns. The library runs a three-stage pipeline:
+ATML describes a document as a tree of rows and columns. The library runs a three-stage pipeline:
 
 ```
 ATML XML string
   → AtmlPdf.Parser    (XML → element structs)
   → AtmlPdf.Layout    (resolve dimensions, font inheritance)
-  → AtmlPdf.Renderer  (element tree → PDF via the pdf library)
+  → AtmlPdf.Renderer  (element tree → PDF via the configured backend)
 ```
 
 ## Demo
@@ -47,7 +47,7 @@ mix atml_pdf.render label.xml /tmp/label.pdf
 
 ```elixir
 xml = """
-<document width="400pt" height="200pt" font-family="Helvetica" font-size="8pt">
+<document page-width="400pt" page-height="200pt" font-family="Helvetica" font-size="8pt">
   <row height="fill">
     <col width="fill" vertical-align="center" text-align="center"
          font-size="14pt" font-weight="bold">
@@ -67,6 +67,23 @@ xml = """
 # binary is a valid PDF you can send over HTTP, write to S3, etc.
 ```
 
+## Multi-page documents
+
+Content that exceeds the page height is automatically split across multiple
+pages. No changes to your template are required — just define `<row>` elements
+as normal and the renderer inserts page breaks as needed.
+
+```elixir
+# Default — auto page split
+AtmlPdf.render(xml, "/tmp/report.pdf")
+
+# Trim to a single page (overflow rows are clipped)
+AtmlPdf.render(xml, "/tmp/label.pdf", multiple_page: false)
+```
+
+See `examples/multi_page_order.xml` for a working 40-item order summary that
+spans multiple A4 pages.
+
 ## ATML Language
 
 ### Document structure
@@ -74,7 +91,7 @@ xml = """
 Every ATML template has a single `<document>` root. Layout is expressed as alternating rows and columns:
 
 ```xml
-<document width="400pt" height="600pt" font-family="Helvetica" font-size="8pt">
+<document page-width="400pt" page-height="600pt" font-family="Helvetica" font-size="8pt">
 
   <row height="60pt" border-bottom="solid 1pt #000000">
     <col width="80pt" vertical-align="center" padding="4pt">
@@ -111,18 +128,20 @@ Every ATML template has a single `<document>` root. Layout is expressed as alter
 
 ```
 <document>
-  └── <row>
-        └── <col>
-              ├── text
-              ├── <img>
-              └── <row>        ← nest rows inside cols to subdivide further
-                    └── <col>
+  ├── <row>
+  │     └── <col>
+  │           ├── text
+  │           ├── <img>
+  │           └── <row>        ← nest rows inside cols to subdivide further
+  │                 └── <col>
+  └── <break />                ← forces a new page between rows
 ```
 
-- `<document>` → `<row>` children only
+- `<document>` → `<row>` and `<break>` children only
 - `<row>` → `<col>` children only
 - `<col>` → text, `<img>`, or `<row>` (mixed content allowed)
 - A `<col>` cannot be a direct child of another `<col>`
+- `<break>` has no attributes or children; ignored in single-page mode
 
 ### Dimensions
 
@@ -242,7 +261,7 @@ deps:
 writing any Elixir code.
 
 ```
-mix atml_pdf.render TEMPLATE [OUTPUT] [--backend BACKEND]
+mix atml_pdf.render TEMPLATE [OUTPUT] [--backend BACKEND] [--single-page]
 ```
 
 | Argument | Required | Description |
@@ -250,6 +269,7 @@ mix atml_pdf.render TEMPLATE [OUTPUT] [--backend BACKEND]
 | `TEMPLATE` | yes | Path to the ATML XML template file |
 | `OUTPUT` | no | Destination PDF path. Defaults to the template path with `.pdf` extension |
 | `--backend` | no | PDF backend: `PdfAdapter` (default) or `ExGutenAdapter` (UTF-8) |
+| `--single-page` | no | Trim output to a single page; overflow rows are clipped |
 
 ```bash
 # Minimal — output written as label.pdf in the same directory
@@ -260,6 +280,12 @@ mix atml_pdf.render templates/label.xml /tmp/output.pdf
 
 # Use ExGuten backend for UTF-8 / multilingual text
 mix atml_pdf.render label.xml /tmp/label.pdf --backend ExGutenAdapter
+
+# Multi-page order example (40 items, auto page split)
+mix atml_pdf.render examples/multi_page_order.xml --backend ExGutenAdapter
+
+# Trim to single page — overflow rows are clipped
+mix atml_pdf.render label.xml /tmp/label.pdf --single-page
 
 # Absolute paths work too
 mix atml_pdf.render /data/templates/label.xml /data/output/label.pdf
@@ -338,10 +364,6 @@ that supports them.
 | `PdfAdapter` | WinAnsi (ASCII + Latin-1) | English, Western European, common symbols |
 | `ExGutenAdapter` | Full UTF-8 | All of the above + Vietnamese, Thai, CJK, Cyrillic, Greek, emoji |
 
-# Or per-document
-AtmlPdf.render(xml, path, backend: AtmlPdf.PdfBackend.ExGutenAdapter)
-```
-
 ## API Reference
 
 ### `AtmlPdf.render/3`
@@ -355,6 +377,7 @@ on success or `{:error, reason}` on failure.
 
 **Options:**
 - `:backend` - PDF backend module (defaults to application config or `PdfAdapter`)
+- `:multiple_page` - When `false`, trims output to a single page and clips overflow rows. Defaults to `true`.
 - `:compress` - Enable PDF compression (backend-specific)
 
 ### `AtmlPdf.render_binary/2`
@@ -367,7 +390,25 @@ Same as `render/3` but returns `{:ok, binary}` instead of writing to disk.
 
 **Options:**
 - `:backend` - PDF backend module (defaults to application config or `PdfAdapter`)
+- `:multiple_page` - When `false`, trims output to a single page and clips overflow rows. Defaults to `true`.
 - `:compress` - Enable PDF compression (backend-specific)
+
+## Examples
+
+The `examples/` directory contains ready-to-render ATML templates:
+
+| File | Description |
+|---|---|
+| `examples/shipping_label.xml` | Single-page shipping label with logo, barcode, and address |
+| `examples/shipping_label_multilingual.xml` | Shipping label with multilingual text (requires ExGutenAdapter) |
+| `examples/multi_page_order.xml` | 40-item order summary spanning multiple A4 pages |
+| `examples/two_page_labels.xml` | Two shipping labels in one document separated by `<break />` |
+
+```bash
+mix atml_pdf.render examples/shipping_label.xml
+mix atml_pdf.render examples/multi_page_order.xml --backend ExGutenAdapter
+mix atml_pdf.render examples/two_page_labels.xml
+```
 
 ## Pipeline Modules
 
@@ -375,7 +416,14 @@ Same as `render/3` but returns `{:ok, binary}` instead of writing to disk.
 |---|---|
 | `AtmlPdf.Parser` | Parses ATML XML into `%Document{}` / `%Row{}` / `%Col{}` / `%Img{}` structs |
 | `AtmlPdf.Layout` | Resolves `fill`, `fit`, `%`, `pt`, `px` dimensions; propagates font inheritance; applies min/max constraints |
-| `AtmlPdf.Renderer` | Walks the resolved tree and issues `Pdf.*` calls to produce a PDF process; handles coordinate-system flip (top-down layout → PDF bottom-left origin) |
+| `AtmlPdf.Renderer` | Walks the resolved tree and issues backend calls to produce a PDF; handles coordinate-system flip (top-down layout → PDF bottom-left origin) and automatic page splitting |
+
+## Documentation
+
+| File | Description |
+|---|---|
+| [`docs/ATML_language_specs.md`](docs/ATML_language_specs.md) | Full ATML language specification — element reference, attribute tables, dimension rules, and layout semantics |
+| [`docs/ADAPTER_IMPLEMENTATION.md`](docs/ADAPTER_IMPLEMENTATION.md) | Guide for implementing a new PDF backend — behaviour callbacks, contract details, and step-by-step instructions |
 
 ## Development
 

@@ -43,7 +43,7 @@ defmodule AtmlPdf.RendererTest do
 
   describe "render/2" do
     test "returns {:ok, ctx} for a minimal document" do
-      doc = resolve!(~s|<document width="100pt" height="100pt"></document>|)
+      doc = resolve!(~s|<document page-width="100pt" page-height="100pt"></document>|)
       assert {:ok, ctx} = Renderer.render(doc)
       assert %Context{} = ctx
       assert ctx.backend_module == AtmlPdf.PdfBackend.PdfAdapter
@@ -51,7 +51,7 @@ defmodule AtmlPdf.RendererTest do
     end
 
     test "pdf export produces a non-empty binary" do
-      doc = resolve!(~s|<document width="100pt" height="100pt"></document>|)
+      doc = resolve!(~s|<document page-width="100pt" page-height="100pt"></document>|)
       {:ok, ctx} = Renderer.render(doc)
       binary = export_and_cleanup(ctx)
       assert is_binary(binary)
@@ -59,7 +59,7 @@ defmodule AtmlPdf.RendererTest do
     end
 
     test "pdf binary starts with PDF header" do
-      doc = resolve!(~s|<document width="100pt" height="100pt"></document>|)
+      doc = resolve!(~s|<document page-width="100pt" page-height="100pt"></document>|)
       {:ok, ctx} = Renderer.render(doc)
       binary = export_and_cleanup(ctx)
       assert binary =~ "%PDF-"
@@ -67,7 +67,7 @@ defmodule AtmlPdf.RendererTest do
 
     test "renders document with a single row and col containing text" do
       xml = """
-      <document width="200pt" height="100pt">
+      <document page-width="200pt" page-height="100pt">
         <row height="50pt">
           <col width="fill">Hello</col>
         </row>
@@ -82,7 +82,7 @@ defmodule AtmlPdf.RendererTest do
 
     test "renders document with borders" do
       xml = """
-      <document width="200pt" height="100pt">
+      <document page-width="200pt" page-height="100pt">
         <row height="50pt" border-bottom="solid 1pt #000000">
           <col width="fill" border-right="solid 1pt #cccccc">text</col>
         </row>
@@ -98,7 +98,7 @@ defmodule AtmlPdf.RendererTest do
 
     test "renders document with padding on document and elements" do
       xml = """
-      <document width="200pt" height="200pt" padding="8pt">
+      <document page-width="200pt" page-height="200pt" padding="8pt">
         <row height="50pt" padding="4pt">
           <col width="fill" padding="2pt">padded text</col>
         </row>
@@ -114,7 +114,7 @@ defmodule AtmlPdf.RendererTest do
 
     test "renders multiple rows" do
       xml = """
-      <document width="200pt" height="200pt">
+      <document page-width="200pt" page-height="200pt">
         <row height="50pt">
           <col width="fill">row one</col>
         </row>
@@ -131,7 +131,7 @@ defmodule AtmlPdf.RendererTest do
 
     test "renders multiple cols in a row" do
       xml = """
-      <document width="200pt" height="100pt">
+      <document page-width="200pt" page-height="100pt">
         <row height="50pt">
           <col width="100pt">left</col>
           <col width="fill">right</col>
@@ -146,7 +146,7 @@ defmodule AtmlPdf.RendererTest do
 
     test "renders nested rows inside a col" do
       xml = """
-      <document width="200pt" height="200pt">
+      <document page-width="200pt" page-height="200pt">
         <row height="100pt">
           <col width="fill">
             <row height="50pt">
@@ -164,7 +164,7 @@ defmodule AtmlPdf.RendererTest do
 
     test "renders font overrides on cols" do
       xml = """
-      <document width="200pt" height="100pt" font-family="Helvetica" font-size="8pt">
+      <document page-width="200pt" page-height="100pt" font-family="Helvetica" font-size="8pt">
         <row height="50pt">
           <col width="fill" font-size="14pt" font-weight="bold">big bold text</col>
         </row>
@@ -178,7 +178,7 @@ defmodule AtmlPdf.RendererTest do
 
     test "renders full spec example template" do
       xml = """
-      <document width="400pt" height="600pt" font-family="Helvetica" font-size="8pt">
+      <document page-width="400pt" page-height="600pt" font-family="Helvetica" font-size="8pt">
         <row height="60pt" border-bottom="solid 1pt #000000">
           <col width="80pt" vertical-align="center" text-align="center" padding="4pt">
           </col>
@@ -258,7 +258,7 @@ defmodule AtmlPdf.RendererTest do
       src = tiny_png_data_uri()
 
       xml = """
-      <document width="200pt" height="150pt">
+      <document page-width="200pt" page-height="150pt">
         <row height="80pt">
           <col width="fill" vertical-align="center" text-align="center" padding="4pt">
             <img src="#{src}" width="60pt" height="60pt" />
@@ -279,7 +279,7 @@ defmodule AtmlPdf.RendererTest do
       legacy_src = "base64:#{tiny_png_b64()}"
 
       xml = """
-      <document width="200pt" height="200pt">
+      <document page-width="200pt" page-height="200pt">
         <row height="80pt">
           <col width="fill" padding="4pt">
             <img src="#{data_uri_src}" width="60pt" height="60pt" />
@@ -305,7 +305,7 @@ defmodule AtmlPdf.RendererTest do
       jpeg_data_uri = "data:image/jpeg;base64,#{tiny_png_b64()}"
 
       xml = """
-      <document width="200pt" height="100pt">
+      <document page-width="200pt" page-height="100pt">
         <row height="80pt">
           <col width="fill" padding="4pt">
             <img src="#{jpeg_data_uri}" width="60pt" height="60pt" />
@@ -324,6 +324,141 @@ defmodule AtmlPdf.RendererTest do
         {:ok, ctx} -> cleanup(ctx)
         _ -> :ok
       end
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Auto page-split
+  # ---------------------------------------------------------------------------
+
+  describe "render/2 auto page split" do
+    test "content taller than one page produces a valid multi-page PDF" do
+      # Page is 100pt tall; each row is 60pt — second row overflows and must
+      # land on page 2.
+      xml = """
+      <document page-width="200pt" page-height="100pt">
+        <row height="60pt">
+          <col width="fill">Page one content</col>
+        </row>
+        <row height="60pt">
+          <col width="fill">Page two content</col>
+        </row>
+      </document>
+      """
+
+      doc = resolve!(xml)
+      assert {:ok, ctx} = Renderer.render(doc, backend: AtmlPdf.PdfBackend.ExGutenAdapter)
+      binary = export_and_cleanup(ctx)
+
+      assert binary =~ "%PDF-"
+      assert byte_size(binary) > 0
+    end
+
+    test "content spanning three pages renders without error" do
+      # Page height 50pt, 3 rows of 40pt each → three pages.
+      xml = """
+      <document page-width="200pt" page-height="50pt">
+        <row height="40pt"><col width="fill">Row 1</col></row>
+        <row height="40pt"><col width="fill">Row 2</col></row>
+        <row height="40pt"><col width="fill">Row 3</col></row>
+      </document>
+      """
+
+      doc = resolve!(xml)
+      assert {:ok, ctx} = Renderer.render(doc, backend: AtmlPdf.PdfBackend.ExGutenAdapter)
+      binary = export_and_cleanup(ctx)
+
+      assert binary =~ "%PDF-"
+    end
+
+    test "content fitting on one page does not add an extra page" do
+      xml = """
+      <document page-width="200pt" page-height="200pt">
+        <row height="50pt"><col width="fill">Fits fine</col></row>
+      </document>
+      """
+
+      doc = resolve!(xml)
+      assert {:ok, ctx} = Renderer.render(doc, backend: AtmlPdf.PdfBackend.ExGutenAdapter)
+      binary = export_and_cleanup(ctx)
+
+      assert binary =~ "%PDF-"
+    end
+
+    test "multiple_page: true is the default" do
+      xml = """
+      <document page-width="200pt" page-height="100pt">
+        <row height="60pt"><col width="fill">Row 1</col></row>
+        <row height="60pt"><col width="fill">Row 2</col></row>
+      </document>
+      """
+
+      doc = resolve!(xml)
+      {:ok, ctx_default} = Renderer.render(doc, backend: AtmlPdf.PdfBackend.ExGutenAdapter)
+      {:ok, ctx_explicit} = Renderer.render(doc, backend: AtmlPdf.PdfBackend.ExGutenAdapter, multiple_page: true)
+
+      pages_default = ctx_default |> export_and_cleanup() |> then(&length(Regex.scan(~r{/Type /Page[^s]}, &1)))
+      pages_explicit = ctx_explicit |> export_and_cleanup() |> then(&length(Regex.scan(~r{/Type /Page[^s]}, &1)))
+
+      assert pages_default == pages_explicit
+      assert pages_default >= 2
+    end
+
+    test "<break> forces a new page between rows" do
+      xml = """
+      <document page-width="200pt" page-height="200pt">
+        <row height="50pt"><col width="fill">Page 1</col></row>
+        <break />
+        <row height="50pt"><col width="fill">Page 2</col></row>
+      </document>
+      """
+
+      doc = resolve!(xml)
+      assert {:ok, ctx} = Renderer.render(doc, backend: AtmlPdf.PdfBackend.ExGutenAdapter)
+      binary = export_and_cleanup(ctx)
+
+      page_count = length(Regex.scan(~r{/Type /Page[^s]}, binary))
+      assert page_count == 2
+    end
+
+    test "<break> is a no-op in single-page mode" do
+      xml = """
+      <document page-width="200pt" page-height="200pt">
+        <row height="50pt"><col width="fill">Page 1</col></row>
+        <break />
+        <row height="50pt"><col width="fill">Would be page 2</col></row>
+      </document>
+      """
+
+      doc = resolve!(xml)
+
+      assert {:ok, ctx} =
+               Renderer.render(doc,
+                 backend: AtmlPdf.PdfBackend.ExGutenAdapter,
+                 multiple_page: false
+               )
+
+      binary = export_and_cleanup(ctx)
+      page_count = length(Regex.scan(~r{/Type /Page[^s]}, binary))
+      assert page_count == 1
+    end
+
+    test "multiple_page: false clips overflow rows to a single page" do
+      xml = """
+      <document page-width="200pt" page-height="100pt">
+        <row height="60pt"><col width="fill">Row 1</col></row>
+        <row height="60pt"><col width="fill">Row 2 - clipped</col></row>
+        <row height="60pt"><col width="fill">Row 3 - clipped</col></row>
+      </document>
+      """
+
+      doc = resolve!(xml)
+      assert {:ok, ctx} = Renderer.render(doc, backend: AtmlPdf.PdfBackend.ExGutenAdapter, multiple_page: false)
+      binary = export_and_cleanup(ctx)
+
+      page_count = length(Regex.scan(~r{/Type /Page[^s]}, binary))
+      assert page_count == 1
+      assert binary =~ "%PDF-"
     end
   end
 end

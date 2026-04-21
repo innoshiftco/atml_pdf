@@ -16,7 +16,7 @@ defmodule AtmlPdf.Parser do
   4. Converts attribute strings to typed values (dimension, spacing, border, etc.).
   """
 
-  alias AtmlPdf.Element.{Col, Document, Img, Row}
+  alias AtmlPdf.Element.{Break, Col, Document, Img, Row}
 
   @type parse_result :: {:ok, Document.t()} | {:error, String.t()}
 
@@ -29,11 +29,11 @@ defmodule AtmlPdf.Parser do
 
   ## Examples
 
-      iex> xml = ~s|<document width="100pt" height="200pt"></document>|
+      iex> xml = ~s|<document page-width="100pt" page-height="200pt"></document>|
       iex> {:ok, doc} = AtmlPdf.Parser.parse(xml)
-      iex> doc.width
+      iex> doc.page_width
       {:pt, 100.0}
-      iex> doc.height
+      iex> doc.page_height
       {:pt, 200.0}
 
   """
@@ -52,13 +52,13 @@ defmodule AtmlPdf.Parser do
   # ---------------------------------------------------------------------------
 
   defp build_document({:xmlElement, :document, _, _, _, _, _, attrs, children, _, _, _}) do
-    with {:ok, width} <- require_attr(attrs, "width", &parse_dimension/1),
-         {:ok, height} <- require_attr(attrs, "height", &parse_dimension/1) do
+    with {:ok, page_width} <- require_attr(attrs, "page-width", &parse_dimension/1),
+         {:ok, page_height} <- require_attr(attrs, "page-height", &parse_dimension/1) do
       padding = get_padding(attrs)
 
       doc = %Document{
-        width: width,
-        height: height,
+        page_width: page_width,
+        page_height: page_height,
         padding: padding,
         font_family: get_attr(attrs, "font-family", "Helvetica"),
         font_size: parse_font_size_value(get_attr(attrs, "font-size", "8pt")),
@@ -95,6 +95,7 @@ defmodule AtmlPdf.Parser do
       border_bottom: get_border_side(attrs, "border", "border-bottom"),
       border_left: get_border_side(attrs, "border", "border-left"),
       vertical_align: parse_vertical_align_value(get_attr(attrs, "vertical-align", "top")),
+      background_color: get_optional_attr(attrs, "background-color"),
       children: []
     }
 
@@ -132,6 +133,8 @@ defmodule AtmlPdf.Parser do
       font_weight: get_optional_font_weight(attrs, "font-weight"),
       text_align: parse_text_align_value(get_attr(attrs, "text-align", "left")),
       vertical_align: parse_vertical_align_value(get_attr(attrs, "vertical-align", "top")),
+      color: get_optional_attr(attrs, "color"),
+      background_color: get_optional_attr(attrs, "background-color"),
       children: []
     }
 
@@ -203,14 +206,18 @@ defmodule AtmlPdf.Parser do
     if str == "", do: {:ok, nil}, else: {:ok, str}
   end
 
-  # <document> may only contain <row>
+  # <document> may only contain <row> or <break>
   defp build_child({:xmlElement, :row, _, _, _, _, _, _, _, _, _, _} = node, :document) do
     build_row(node, :document)
   end
 
+  defp build_child({:xmlElement, :break, _, _, _, _, _, _, _, _, _, _}, :document) do
+    {:ok, %Break{}}
+  end
+
   defp build_child({:xmlElement, name, _, _, _, _, _, _, _, _, _, _}, :document)
-       when name != :row do
-    {:error, "<document> may only contain <row> children, got <#{name}>"}
+       when name not in [:row, :break] do
+    {:error, "<document> may only contain <row> or <break> children, got <#{name}>"}
   end
 
   # <row> may only contain <col>

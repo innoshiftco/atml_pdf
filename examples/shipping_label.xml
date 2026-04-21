@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document width="400pt" height="600pt" font-family="Helvetica" font-size="8pt" padding="12pt">
+<document page-width="400pt" page-height="600pt" font-family="Helvetica" font-size="8pt" padding="12pt">
   <!-- Row 1: Header — Logo | MAIN | (empty) -->
   <row height="50pt" border="solid 1pt #000000">
     <col width="30%" vertical-align="center" text-align="center" padding="4pt" border-right="solid 1pt #000000">

@@ -22,6 +22,7 @@ defmodule AtmlPdf.Element.Row do
           border_bottom: Types.border(),
           border_left: Types.border(),
           vertical_align: :top | :center | :bottom,
+          background_color: String.t() | nil,
           children: list()
         }
 
@@ -38,5 +39,6 @@ defmodule AtmlPdf.Element.Row do
             border_bottom: :none,
             border_left: :none,
             vertical_align: :top,
+            background_color: nil,
             children: []
 end

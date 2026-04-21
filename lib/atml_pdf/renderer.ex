@@ -23,7 +23,7 @@ defmodule AtmlPdf.Renderer do
   - `:compress` - Enable compression (backend-specific)
   """
 
-  alias AtmlPdf.Element.{Col, Document, Img, Row}
+  alias AtmlPdf.Element.{Break, Col, Document, Img, Row}
   alias AtmlPdf.PdfBackend.Context
 
   # ---------------------------------------------------------------------------
@@ -42,11 +42,14 @@ defmodule AtmlPdf.Renderer do
   ## Options
 
   - `:backend` - Backend module implementing `AtmlPdf.PdfBackend` (optional)
+  - `:multiple_page` - When `true` (default), automatically inserts new pages
+    when content overflows the page height. When `false`, content is clipped to
+    a single page.
   - Additional backend-specific options (e.g., `:compress`)
 
   ## Examples
 
-      iex> xml = ~s|<document width="100pt" height="100pt"></document>|
+      iex> xml = ~s|<document page-width="100pt" page-height="100pt"></document>|
       iex> {:ok, parsed} = AtmlPdf.Parser.parse(xml)
       iex> {:ok, resolved} = AtmlPdf.Layout.resolve(parsed)
       iex> {:ok, ctx} = AtmlPdf.Renderer.render(resolved)
@@ -57,13 +60,14 @@ defmodule AtmlPdf.Renderer do
   @spec render(Document.t(), keyword()) :: {:ok, Context.t()} | {:error, String.t()}
   def render(%Document{} = doc, opts \\ []) do
     backend = get_backend_module(opts)
-    {:ok, backend_state} = backend.new(doc.width, doc.height, opts)
+    multiple_page = Keyword.get(opts, :multiple_page, true)
+    {:ok, backend_state} = backend.new(doc.page_width, doc.page_height, opts)
 
     ctx = %Context{
       backend_module: backend,
       backend_state: backend_state,
-      page_width: doc.width,
-      page_height: doc.height
+      page_width: doc.page_width,
+      page_height: doc.page_height
     }
 
     font_ctx = %{
@@ -72,11 +76,13 @@ defmodule AtmlPdf.Renderer do
       font_weight: doc.font_weight
     }
 
-    {pad_top, pad_right, _pad_bottom, pad_left} = normalise_padding(doc.padding)
+    {pad_top, pad_right, pad_bottom, pad_left} = normalise_padding(doc.padding)
 
     inner_x = pad_left
     inner_y = pad_top
-    inner_width = doc.width - pad_left - pad_right
+    inner_width = doc.page_width - pad_left - pad_right
+    # Usable height per page accounts for top and bottom padding
+    page_content_height = doc.page_height - pad_top - pad_bottom
 
     # Set initial font through backend
     ctx =
@@ -86,7 +92,11 @@ defmodule AtmlPdf.Renderer do
         )
       end)
 
-    ctx = render_rows(ctx, doc.children, inner_x, inner_y, inner_width, doc.height, font_ctx)
+    ctx =
+      render_rows(ctx, doc.children, inner_x, inner_y, inner_width, page_content_height, font_ctx,
+        pad_top: pad_top,
+        multiple_page: multiple_page
+      )
 
     {:ok, ctx}
   rescue
@@ -110,17 +120,56 @@ defmodule AtmlPdf.Renderer do
   # Row rendering
   # ---------------------------------------------------------------------------
 
-  defp render_rows(ctx, rows, origin_x, origin_y, _parent_width, _parent_height, font_ctx) do
+  defp render_rows(ctx, rows, origin_x, origin_y, _parent_width, page_content_height, font_ctx,
+         opts
+       ) do
+    pad_top = Keyword.get(opts, :pad_top, 0)
+    multiple_page = Keyword.get(opts, :multiple_page, true)
+    page_bottom = pad_top + page_content_height
+
     {ctx, _} =
-      Enum.reduce(rows, {ctx, origin_y}, fn %Row{} = row, {ctx_acc, current_y} ->
-        ctx_acc = render_row(ctx_acc, row, origin_x, current_y, font_ctx)
-        {ctx_acc, current_y + row.height}
+      Enum.reduce(rows, {ctx, origin_y}, fn child, {ctx_acc, current_y} ->
+        case child do
+          %Break{} ->
+            # Explicit page break — force a new page (ignored in single-page mode).
+            if multiple_page do
+              ctx_acc =
+                update_backend(ctx_acc, fn state -> ctx_acc.backend_module.add_page(state) end)
+
+              {ctx_acc, pad_top}
+            else
+              {ctx_acc, current_y}
+            end
+
+          %Row{} = row ->
+            cond do
+              # Row fits on the current page — render normally.
+              current_y + row.height <= page_bottom ->
+                ctx_acc = render_row(ctx_acc, row, origin_x, current_y, font_ctx)
+                {ctx_acc, current_y + row.height}
+
+              # Row overflows and multi-page is enabled — start a new page.
+              multiple_page ->
+                ctx_acc =
+                  update_backend(ctx_acc, fn state -> ctx_acc.backend_module.add_page(state) end)
+
+                ctx_acc = render_row(ctx_acc, row, origin_x, pad_top, font_ctx)
+                {ctx_acc, pad_top + row.height}
+
+              # Row overflows but multi-page is disabled — skip the row (clip to one page).
+              true ->
+                {ctx_acc, current_y}
+            end
+        end
       end)
 
     ctx
   end
 
   defp render_row(ctx, %Row{} = row, origin_x, origin_y, font_ctx) do
+    # Draw background fill
+    ctx = draw_background(ctx, origin_x, origin_y, row.width, row.height, row.background_color)
+
     # Draw row borders
     ctx = draw_borders(ctx, origin_x, origin_y, row.width, row.height, row)
 
@@ -156,6 +205,9 @@ defmodule AtmlPdf.Renderer do
       font_size: col.font_size || font_ctx.font_size,
       font_weight: col.font_weight || font_ctx.font_weight
     }
+
+    # Draw background fill
+    ctx = draw_background(ctx, origin_x, origin_y, col.width, col.height, col.background_color)
 
     # Draw col borders
     ctx = draw_borders(ctx, origin_x, origin_y, col.width, col.height, col)
@@ -209,6 +261,16 @@ defmodule AtmlPdf.Renderer do
                       bold: font_ctx.font_weight == :bold
                     )
                   end)
+
+                ctx_acc =
+                  if col.color do
+                    rgb = parse_hex_color(col.color)
+                    update_backend(ctx_acc, fn state ->
+                      ctx_acc.backend_module.set_fill_color(state, rgb)
+                    end)
+                  else
+                    ctx_acc
+                  end
 
                 text_height = estimate_text_height(trimmed, inner_width, font_ctx.font_size)
 
@@ -407,6 +469,24 @@ defmodule AtmlPdf.Renderer do
   defp inline_image_src?(_), do: false
 
   # ---------------------------------------------------------------------------
+  # Background rendering
+  # ---------------------------------------------------------------------------
+
+  defp draw_background(ctx, _x, _y, _width, _height, nil), do: ctx
+
+  defp draw_background(ctx, x, layout_y, width, height, color) do
+    page_height = ctx.page_height
+    pdf_y = page_height - layout_y - height
+    rgb = parse_hex_color(color)
+
+    ctx
+    |> update_backend(fn state -> ctx.backend_module.set_fill_color(state, rgb) end)
+    |> update_backend(fn state -> ctx.backend_module.rectangle(state, {x, pdf_y}, {width, height}) end)
+    |> update_backend(fn state -> ctx.backend_module.fill(state) end)
+    |> update_backend(fn state -> ctx.backend_module.set_fill_color(state, {0, 0, 0}) end)
+  end
+
+  # ---------------------------------------------------------------------------
   # Border rendering
   # ---------------------------------------------------------------------------
 
@@ -430,14 +510,26 @@ defmodule AtmlPdf.Renderer do
 
   defp draw_border_line(ctx, :none, _from, _to), do: ctx
 
-  defp draw_border_line(ctx, {:border, _style, width, color}, from, to) do
+  defp draw_border_line(ctx, {:border, style, width, color}, from, to) do
     rgb = parse_hex_color(color)
 
     ctx
     |> update_backend(fn state -> ctx.backend_module.set_stroke_color(state, rgb) end)
     |> update_backend(fn state -> ctx.backend_module.set_line_width(state, width) end)
+    |> set_dash_for_style(style)
     |> update_backend(fn state -> ctx.backend_module.line(state, from, to) end)
     |> update_backend(fn state -> ctx.backend_module.stroke(state) end)
+    |> update_backend(fn state -> ctx.backend_module.reset_dash(state) end)
+  end
+
+  defp set_dash_for_style(ctx, :solid), do: ctx
+
+  defp set_dash_for_style(ctx, :dashed) do
+    update_backend(ctx, fn state -> ctx.backend_module.set_dash(state, [6, 3], 0) end)
+  end
+
+  defp set_dash_for_style(ctx, :dotted) do
+    update_backend(ctx, fn state -> ctx.backend_module.set_dash(state, [1, 2], 0) end)
   end
 
   # ---------------------------------------------------------------------------

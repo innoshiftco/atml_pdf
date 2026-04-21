@@ -4,7 +4,7 @@ defmodule AtmlPdf.ExGutenIntegrationTest do
   alias AtmlPdf.PdfBackend.ExGutenAdapter
 
   @simple_xml """
-  <document width="400pt" height="200pt" font-family="Helvetica" font-size="10pt">
+  <document page-width="400pt" page-height="200pt" font-family="Helvetica" font-size="10pt">
     <row height="60pt" border-bottom="solid 2pt #000000">
       <col width="fill" vertical-align="center" text-align="center"
            font-size="18pt" font-weight="bold">
@@ -20,7 +20,7 @@ defmodule AtmlPdf.ExGutenIntegrationTest do
   """
 
   @utf8_xml """
-  <document width="400pt" height="300pt" font-family="Helvetica" font-size="10pt">
+  <document page-width="400pt" page-height="300pt" font-family="Helvetica" font-size="10pt">
     <row height="50pt" border-bottom="solid 1pt #000000">
       <col width="fill" vertical-align="center" text-align="center" font-weight="bold">
         UTF-8 Test
@@ -68,7 +68,7 @@ defmodule AtmlPdf.ExGutenIntegrationTest do
 
     test "renders document with borders and styling" do
       xml = """
-      <document width="300pt" height="200pt" font-family="Helvetica" font-size="10pt">
+      <document page-width="300pt" page-height="200pt" font-family="Helvetica" font-size="10pt">
         <row height="50pt" border-bottom="solid 2pt #000000">
           <col width="50%" border-right="solid 1pt #cccccc" padding="5pt">
             Left Column
@@ -145,7 +145,7 @@ defmodule AtmlPdf.ExGutenIntegrationTest do
   describe "font handling" do
     test "renders with different font families" do
       xml = """
-      <document width="300pt" height="150pt" font-family="Times-Roman" font-size="10pt">
+      <document page-width="300pt" page-height="150pt" font-family="Times-Roman" font-size="10pt">
         <row height="50pt">
           <col width="fill" padding="5pt" font-family="Helvetica">
             Helvetica Font
@@ -175,7 +175,7 @@ defmodule AtmlPdf.ExGutenIntegrationTest do
 
     test "renders with bold text" do
       xml = """
-      <document width="300pt" height="100pt" font-family="Helvetica" font-size="10pt">
+      <document page-width="300pt" page-height="100pt" font-family="Helvetica" font-size="10pt">
         <row height="50pt">
           <col width="fill" padding="5pt">
             Normal weight text

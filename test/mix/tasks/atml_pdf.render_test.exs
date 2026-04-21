@@ -2,10 +2,10 @@ defmodule Mix.Tasks.AtmlPdf.RenderTest do
   @moduledoc false
   use ExUnit.Case
 
-  @minimal_xml ~s|<document width="100pt" height="100pt"></document>|
+  @minimal_xml ~s|<document page-width="100pt" page-height="100pt"></document>|
 
   @full_xml """
-  <document width="400pt" height="200pt" font-family="Helvetica" font-size="8pt">
+  <document page-width="400pt" page-height="200pt" font-family="Helvetica" font-size="8pt">
     <row height="fill">
       <col width="fill" vertical-align="center" text-align="center"
            font-size="14pt" font-weight="bold">

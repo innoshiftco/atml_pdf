@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Example: Multi-page order summary
+  Renders 40 line items across multiple A4 pages automatically.
+
+  Usage:
+    mix atml_pdf.render examples/multi_page_order.xml -backend ExGutenAdapter
+-->
+<document page-width="595pt" page-height="842pt"
+          font-family="NotoSans" font-size="9pt"
+          padding="36pt 48pt 36pt 48pt">
+
+  <!-- ── Header ── -->
+  <row height="28pt">
+    <col width="fill" font-size="18pt" font-weight="bold" vertical-align="center">
+      Order Summary
+    </col>
+    <col width="160pt" font-size="9pt" vertical-align="center" text-align="right">
+      Order #ORD-2026-00042
+    </col>
+  </row>
+  <row height="16pt">
+    <col width="fill" font-size="8pt" vertical-align="center">
+      Date: 2026-04-21    |    Customer: Acme Corporation    |    Status: Processing
+    </col>
+  </row>
+  <row height="8pt">
+    <col width="fill" border-bottom="solid 1pt #333333"></col>
+  </row>
+  <row height="8pt">
+    <col width="fill"></col>
+  </row>
+
+  <!-- ── Column headings ── -->
+  <row height="20pt" border-bottom="solid 1pt #cccccc">
+    <col width="70pt"  font-weight="bold" vertical-align="center">SKU</col>
+    <col width="fill"  font-weight="bold" vertical-align="center">Description</col>
+    <col width="30pt"  font-weight="bold" vertical-align="center" text-align="center">Qty</col>
+    <col width="65pt"  font-weight="bold" vertical-align="center" text-align="right">Unit Price</col>
+    <col width="70pt"  font-weight="bold" vertical-align="center" text-align="right">Total</col>
+  </row>
+
+  <!-- ── Line items ── -->
+  <row height="18pt">
+    <col width="70pt"  vertical-align="center">SKU-001</col>
+    <col width="fill"  vertical-align="center">Wireless Keyboard</col>
+    <col width="30pt"  vertical-align="center" text-align="center">2</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$49.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$99.98</col>
+  </row>
+  <row height="18pt" border-bottom="solid 0.5pt #eeeeee">
+    <col width="70pt"  vertical-align="center">SKU-002</col>
+    <col width="fill"  vertical-align="center">Ergonomic Mouse</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$39.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$39.99</col>
+  </row>
+  <row height="18pt">
+    <col width="70pt"  vertical-align="center">SKU-003</col>
+    <col width="fill"  vertical-align="center">USB-C Hub 7-in-1</col>
+    <col width="30pt"  vertical-align="center" text-align="center">3</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$29.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$89.97</col>
+  </row>
+  <row height="18pt" border-bottom="solid 0.5pt #eeeeee">
+    <col width="70pt"  vertical-align="center">SKU-004</col>
+    <col width="fill"  vertical-align="center">27" Monitor Stand</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$79.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$79.99</col>
+  </row>
+  <row height="18pt">
+    <col width="70pt"  vertical-align="center">SKU-005</col>
+    <col width="fill"  vertical-align="center">Laptop Cooling Pad</col>
+    <col width="30pt"  vertical-align="center" text-align="center">2</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$24.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$49.98</col>
+  </row>
+  <row height="18pt" border-bottom="solid 0.5pt #eeeeee">
+    <col width="70pt"  vertical-align="center">SKU-006</col>
+    <col width="fill"  vertical-align="center">HDMI Cable 2m</col>
+    <col width="30pt"  vertical-align="center" text-align="center">5</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$8.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$44.95</col>
+  </row>
+  <row height="18pt">
+    <col width="70pt"  vertical-align="center">SKU-007</col>
+    <col width="fill"  vertical-align="center">Cable Management Kit</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$14.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$14.99</col>
+  </row>
+  <row height="18pt" border-bottom="solid 0.5pt #eeeeee">
+    <col width="70pt"  vertical-align="center">SKU-008</col>
+    <col width="fill"  vertical-align="center">Desk Lamp LED</col>
+    <col width="30pt"  vertical-align="center" text-align="center">2</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$34.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$69.98</col>
+  </row>
+  <row height="18pt">
+    <col width="70pt"  vertical-align="center">SKU-009</col>
+    <col width="fill"  vertical-align="center">Monitor Arm Single</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$89.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$89.99</col>
+  </row>
+  <row height="18pt" border-bottom="solid 0.5pt #eeeeee">
+    <col width="70pt"  vertical-align="center">SKU-010</col>
+    <col width="fill"  vertical-align="center">Laptop Stand Aluminum</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$59.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$59.99</col>
+  </row>
+  <row height="18pt">
+    <col width="70pt"  vertical-align="center">SKU-011</col>
+    <col width="fill"  vertical-align="center">Webcam Full HD</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$69.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$69.99</col>
+  </row>
+  <row height="18pt" border-bottom="solid 0.5pt #eeeeee">
+    <col width="70pt"  vertical-align="center">SKU-012</col>
+    <col width="fill"  vertical-align="center">Headset Noise Cancel</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$129.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$129.99</col>
+  </row>
+  <row height="18pt">
+    <col width="70pt"  vertical-align="center">SKU-013</col>
+    <col width="fill"  vertical-align="center">Mechanical Keyboard</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$119.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$119.99</col>
+  </row>
+  <row height="18pt" border-bottom="solid 0.5pt #eeeeee">
+    <col width="70pt"  vertical-align="center">SKU-014</col>
+    <col width="fill"  vertical-align="center">Gaming Mouse Pad XL</col>
+    <col width="30pt"  vertical-align="center" text-align="center">2</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$19.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$39.98</col>
+  </row>
+  <row height="18pt">
+    <col width="70pt"  vertical-align="center">SKU-015</col>
+    <col width="fill"  vertical-align="center">USB 3.0 Flash Drive 64GB</col>
+    <col width="30pt"  vertical-align="center" text-align="center">4</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$12.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$51.96</col>
+  </row>
+  <row height="18pt" border-bottom="solid 0.5pt #eeeeee">
+    <col width="70pt"  vertical-align="center">SKU-016</col>
+    <col width="fill"  vertical-align="center">Wireless Charger Pad</col>
+    <col width="30pt"  vertical-align="center" text-align="center">2</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$22.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$45.98</col>
+  </row>
+  <row height="18pt">
+    <col width="70pt"  vertical-align="center">SKU-017</col>
+    <col width="fill"  vertical-align="center">Smart Power Strip</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$44.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$44.99</col>
+  </row>
+  <row height="18pt" border-bottom="solid 0.5pt #eeeeee">
+    <col width="70pt"  vertical-align="center">SKU-018</col>
+    <col width="fill"  vertical-align="center">Portable SSD 1TB</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$109.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$109.99</col>
+  </row>
+  <row height="18pt">
+    <col width="70pt"  vertical-align="center">SKU-019</col>
+    <col width="fill"  vertical-align="center">Screen Cleaning Kit</col>
+    <col width="30pt"  vertical-align="center" text-align="center">3</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$9.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$29.97</col>
+  </row>
+  <row height="18pt" border-bottom="solid 0.5pt #eeeeee">
+    <col width="70pt"  vertical-align="center">SKU-020</col>
+    <col width="fill"  vertical-align="center">Privacy Screen Filter</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$39.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$39.99</col>
+  </row>
+  <row height="18pt">
+    <col width="70pt"  vertical-align="center">SKU-021</col>
+    <col width="fill"  vertical-align="center">Wrist Rest Gel</col>
+    <col width="30pt"  vertical-align="center" text-align="center">2</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$17.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$35.98</col>
+  </row>
+  <row height="18pt" border-bottom="solid 0.5pt #eeeeee">
+    <col width="70pt"  vertical-align="center">SKU-022</col>
+    <col width="fill"  vertical-align="center">Blue Light Glasses</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$29.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$29.99</col>
+  </row>
+  <row height="18pt">
+    <col width="70pt"  vertical-align="center">SKU-023</col>
+    <col width="fill"  vertical-align="center">Desk Organizer</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$22.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$22.99</col>
+  </row>
+  <row height="18pt" border-bottom="solid 0.5pt #eeeeee">
+    <col width="70pt"  vertical-align="center">SKU-024</col>
+    <col width="fill"  vertical-align="center">Mini Vacuum Cleaner</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$18.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$18.99</col>
+  </row>
+  <row height="18pt">
+    <col width="70pt"  vertical-align="center">SKU-025</col>
+    <col width="fill"  vertical-align="center">Surge Protector 8-Port</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$34.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$34.99</col>
+  </row>
+  <row height="18pt" border-bottom="solid 0.5pt #eeeeee">
+    <col width="70pt"  vertical-align="center">SKU-026</col>
+    <col width="fill"  vertical-align="center">Wi-Fi Extender</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$49.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$49.99</col>
+  </row>
+  <row height="18pt">
+    <col width="70pt"  vertical-align="center">SKU-027</col>
+    <col width="fill"  vertical-align="center">Ethernet Cable Cat6 5m</col>
+    <col width="30pt"  vertical-align="center" text-align="center">3</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$11.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$35.97</col>
+  </row>
+  <row height="18pt" border-bottom="solid 0.5pt #eeeeee">
+    <col width="70pt"  vertical-align="center">SKU-028</col>
+    <col width="fill"  vertical-align="center">KVM Switch 2-Port</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$39.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$39.99</col>
+  </row>
+  <row height="18pt">
+    <col width="70pt"  vertical-align="center">SKU-029</col>
+    <col width="fill"  vertical-align="center">Label Maker</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$54.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$54.99</col>
+  </row>
+  <row height="18pt" border-bottom="solid 0.5pt #eeeeee">
+    <col width="70pt"  vertical-align="center">SKU-030</col>
+    <col width="fill"  vertical-align="center">Label Tape 12mm x5</col>
+    <col width="30pt"  vertical-align="center" text-align="center">2</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$14.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$29.98</col>
+  </row>
+  <row height="18pt">
+    <col width="70pt"  vertical-align="center">SKU-031</col>
+    <col width="fill"  vertical-align="center">Cable Clips 50pcs</col>
+    <col width="30pt"  vertical-align="center" text-align="center">3</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$6.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$20.97</col>
+  </row>
+  <row height="18pt" border-bottom="solid 0.5pt #eeeeee">
+    <col width="70pt"  vertical-align="center">SKU-032</col>
+    <col width="fill"  vertical-align="center">VESA Mount Adapter</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$19.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$19.99</col>
+  </row>
+  <row height="18pt">
+    <col width="70pt"  vertical-align="center">SKU-033</col>
+    <col width="fill"  vertical-align="center">Ambient Light Bar</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$44.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$44.99</col>
+  </row>
+  <row height="18pt" border-bottom="solid 0.5pt #eeeeee">
+    <col width="70pt"  vertical-align="center">SKU-034</col>
+    <col width="fill"  vertical-align="center">USB Desk Fan</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$24.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$24.99</col>
+  </row>
+  <row height="18pt">
+    <col width="70pt"  vertical-align="center">SKU-035</col>
+    <col width="fill"  vertical-align="center">Hand Sanitizer 500ml</col>
+    <col width="30pt"  vertical-align="center" text-align="center">4</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$8.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$35.96</col>
+  </row>
+  <row height="18pt" border-bottom="solid 0.5pt #eeeeee">
+    <col width="70pt"  vertical-align="center">SKU-036</col>
+    <col width="fill"  vertical-align="center">Whiteboard A2</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$59.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$59.99</col>
+  </row>
+  <row height="18pt">
+    <col width="70pt"  vertical-align="center">SKU-037</col>
+    <col width="fill"  vertical-align="center">Magnetic Markers Set</col>
+    <col width="30pt"  vertical-align="center" text-align="center">2</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$12.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$25.98</col>
+  </row>
+  <row height="18pt" border-bottom="solid 0.5pt #eeeeee">
+    <col width="70pt"  vertical-align="center">SKU-038</col>
+    <col width="fill"  vertical-align="center">Paper Shredder Mini</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$79.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$79.99</col>
+  </row>
+  <row height="18pt">
+    <col width="70pt"  vertical-align="center">SKU-039</col>
+    <col width="fill"  vertical-align="center">Binding Machine</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$89.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$89.99</col>
+  </row>
+  <row height="18pt" border-bottom="solid 0.5pt #eeeeee">
+    <col width="70pt"  vertical-align="center">SKU-040</col>
+    <col width="fill"  vertical-align="center">Laminator A4</col>
+    <col width="30pt"  vertical-align="center" text-align="center">1</col>
+    <col width="65pt"  vertical-align="center" text-align="right">$69.99</col>
+    <col width="70pt"  vertical-align="center" text-align="right">$69.99</col>
+  </row>
+
+  <!-- ── Totals ── -->
+  <row height="8pt">
+    <col width="fill" border-top="solid 1pt #333333"></col>
+  </row>
+  <row height="22pt">
+    <col width="fill"></col>
+    <col width="100pt" font-weight="bold" vertical-align="center" text-align="right">
+      Grand Total:
+    </col>
+    <col width="70pt" font-weight="bold" vertical-align="center" text-align="right">
+      $1,810.52
+    </col>
+  </row>
+  <row height="16pt">
+    <col width="fill" font-size="7pt" vertical-align="center">
+      All prices in USD. Thank you for your order.
+    </col>
+  </row>
+
+</document>
