@@ -40,13 +40,14 @@ defmodule Mix.Tasks.AtmlPdf.RenderTest do
     end
 
     messages =
-      Stream.repeatedly(fn ->
+      fn ->
         receive do
           {:mix_shell, _, [msg]} -> msg
         after
           0 -> nil
         end
-      end)
+      end
+      |> Stream.repeatedly()
       |> Stream.take_while(&(&1 != nil))
       |> Enum.join("\n")
 

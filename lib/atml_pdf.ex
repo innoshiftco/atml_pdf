@@ -35,7 +35,9 @@ defmodule AtmlPdf do
 
   """
 
-  alias AtmlPdf.{Layout, Parser, Renderer}
+  alias AtmlPdf.Layout
+  alias AtmlPdf.Parser
+  alias AtmlPdf.Renderer
 
   @doc """
   Parses `template`, resolves its layout, and writes the resulting PDF to

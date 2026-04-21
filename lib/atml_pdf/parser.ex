@@ -16,7 +16,11 @@ defmodule AtmlPdf.Parser do
   4. Converts attribute strings to typed values (dimension, spacing, border, etc.).
   """
 
-  alias AtmlPdf.Element.{Break, Col, Document, Img, Row}
+  alias AtmlPdf.Element.Break
+  alias AtmlPdf.Element.Col
+  alias AtmlPdf.Element.Document
+  alias AtmlPdf.Element.Img
+  alias AtmlPdf.Element.Row
 
   @type parse_result :: {:ok, Document.t()} | {:error, String.t()}
 
@@ -215,8 +219,7 @@ defmodule AtmlPdf.Parser do
     {:ok, %Break{}}
   end
 
-  defp build_child({:xmlElement, name, _, _, _, _, _, _, _, _, _, _}, :document)
-       when name not in [:row, :break] do
+  defp build_child({:xmlElement, name, _, _, _, _, _, _, _, _, _, _}, :document) when name not in [:row, :break] do
     {:error, "<document> may only contain <row> or <break> children, got <#{name}>"}
   end
 
@@ -225,8 +228,7 @@ defmodule AtmlPdf.Parser do
     build_col(node, :row)
   end
 
-  defp build_child({:xmlElement, name, _, _, _, _, _, _, _, _, _, _}, :row)
-       when name != :col do
+  defp build_child({:xmlElement, name, _, _, _, _, _, _, _, _, _, _}, :row) when name != :col do
     {:error, "<row> may only contain <col> children, got <#{name}>"}
   end
 
@@ -434,8 +436,7 @@ defmodule AtmlPdf.Parser do
         {t, l, t, l}
 
       [t, r, b, l] ->
-        {parse_single_spacing(t), parse_single_spacing(r), parse_single_spacing(b),
-         parse_single_spacing(l)}
+        {parse_single_spacing(t), parse_single_spacing(r), parse_single_spacing(b), parse_single_spacing(l)}
 
       _ ->
         {0, 0, 0, 0}

@@ -5,6 +5,8 @@ defmodule AtmlPdf.PdfBackendIntegrationTest do
   """
   use ExUnit.Case, async: true
 
+  alias AtmlPdf.PdfBackend.PdfAdapter
+
   @simple_xml """
   <document page-width="200pt" page-height="100pt" font-family="Helvetica" font-size="12pt">
     <row height="fill">
@@ -22,7 +24,7 @@ defmodule AtmlPdf.PdfBackendIntegrationTest do
 
     test "renders via explicit backend option" do
       assert {:ok, binary} =
-               AtmlPdf.render_binary(@simple_xml, backend: AtmlPdf.PdfBackend.PdfAdapter)
+               AtmlPdf.render_binary(@simple_xml, backend: PdfAdapter)
 
       assert is_binary(binary)
       assert binary =~ "%PDF-"
@@ -32,7 +34,7 @@ defmodule AtmlPdf.PdfBackendIntegrationTest do
       path = Path.join(System.tmp_dir!(), "backend_test_#{:erlang.unique_integer()}.pdf")
 
       assert :ok =
-               AtmlPdf.render(@simple_xml, path, backend: AtmlPdf.PdfBackend.PdfAdapter)
+               AtmlPdf.render(@simple_xml, path, backend: PdfAdapter)
 
       assert File.exists?(path)
       File.rm(path)
@@ -46,7 +48,7 @@ defmodule AtmlPdf.PdfBackendIntegrationTest do
 
       try do
         # Set backend via config
-        Application.put_env(:atml_pdf, :pdf_backend, AtmlPdf.PdfBackend.PdfAdapter)
+        Application.put_env(:atml_pdf, :pdf_backend, PdfAdapter)
 
         assert {:ok, binary} = AtmlPdf.render_binary(@simple_xml)
         assert is_binary(binary)
@@ -66,11 +68,11 @@ defmodule AtmlPdf.PdfBackendIntegrationTest do
 
       try do
         # Set a config (doesn't matter what since we'll override)
-        Application.put_env(:atml_pdf, :pdf_backend, AtmlPdf.PdfBackend.PdfAdapter)
+        Application.put_env(:atml_pdf, :pdf_backend, PdfAdapter)
 
         # Override with option - should use PdfAdapter
         assert {:ok, binary} =
-                 AtmlPdf.render_binary(@simple_xml, backend: AtmlPdf.PdfBackend.PdfAdapter)
+                 AtmlPdf.render_binary(@simple_xml, backend: PdfAdapter)
 
         assert is_binary(binary)
       after
@@ -88,9 +90,9 @@ defmodule AtmlPdf.PdfBackendIntegrationTest do
     test "renders document with images" do
       # Minimal 1×1 white pixel PNG
       tiny_png =
-        <<137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 8,
-          2, 0, 0, 0, 144, 119, 83, 222, 0, 0, 0, 12, 73, 68, 65, 84, 8, 215, 99, 248, 207, 192,
-          0, 0, 0, 2, 0, 1, 226, 33, 188, 51, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130>>
+        <<137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2, 0, 0, 0, 144, 119,
+          83, 222, 0, 0, 0, 12, 73, 68, 65, 84, 8, 215, 99, 248, 207, 192, 0, 0, 0, 2, 0, 1, 226, 33, 188, 51, 0, 0, 0, 0,
+          73, 69, 78, 68, 174, 66, 96, 130>>
 
       data_uri = "data:image/png;base64,#{Base.encode64(tiny_png)}"
 
@@ -105,7 +107,7 @@ defmodule AtmlPdf.PdfBackendIntegrationTest do
       """
 
       assert {:ok, binary} =
-               AtmlPdf.render_binary(xml, backend: AtmlPdf.PdfBackend.PdfAdapter)
+               AtmlPdf.render_binary(xml, backend: PdfAdapter)
 
       assert is_binary(binary)
     end
@@ -121,7 +123,7 @@ defmodule AtmlPdf.PdfBackendIntegrationTest do
       """
 
       assert {:ok, binary} =
-               AtmlPdf.render_binary(xml, backend: AtmlPdf.PdfBackend.PdfAdapter)
+               AtmlPdf.render_binary(xml, backend: PdfAdapter)
 
       assert is_binary(binary)
     end
@@ -143,7 +145,7 @@ defmodule AtmlPdf.PdfBackendIntegrationTest do
       """
 
       assert {:ok, binary} =
-               AtmlPdf.render_binary(xml, backend: AtmlPdf.PdfBackend.PdfAdapter)
+               AtmlPdf.render_binary(xml, backend: PdfAdapter)
 
       assert is_binary(binary)
     end
@@ -161,7 +163,7 @@ defmodule AtmlPdf.PdfBackendIntegrationTest do
       """
 
       assert {:ok, binary} =
-               AtmlPdf.render_binary(xml, backend: AtmlPdf.PdfBackend.PdfAdapter)
+               AtmlPdf.render_binary(xml, backend: PdfAdapter)
 
       assert is_binary(binary)
     end
@@ -182,7 +184,7 @@ defmodule AtmlPdf.PdfBackendIntegrationTest do
       """
 
       assert {:ok, binary} =
-               AtmlPdf.render_binary(xml, backend: AtmlPdf.PdfBackend.PdfAdapter)
+               AtmlPdf.render_binary(xml, backend: PdfAdapter)
 
       assert is_binary(binary)
     end

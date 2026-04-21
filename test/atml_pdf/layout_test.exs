@@ -1,7 +1,9 @@
 defmodule AtmlPdf.LayoutTest do
   use ExUnit.Case, async: true
 
-  alias AtmlPdf.Element.{Col, Document, Row}
+  alias AtmlPdf.Element.Col
+  alias AtmlPdf.Element.Document
+  alias AtmlPdf.Element.Row
   alias AtmlPdf.Layout
   alias AtmlPdf.Parser
 
