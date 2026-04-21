@@ -248,6 +248,42 @@ defmodule AtmlPdf.PdfBackend.ExGutenAdapter do
   end
 
   @impl true
+  def set_fill_color(pdf, color) do
+    rgb = normalize_color(color)
+    ExGuten.set_fill_color(pdf, rgb)
+  end
+
+  @impl true
+  def rectangle(pdf, {x, y}, {width, height}) do
+    # ExGuten's rectangle/5 always appends S (stroke), consuming the path before
+    # fill can be called. Build the rect as an explicit closed path instead.
+    # PDF's f operator closes and fills the path, so we just need move_to + line_to.
+    pdf
+    |> ExGuten.move_to(x, y)
+    |> ExGuten.line_to(x + width, y)
+    |> ExGuten.line_to(x + width, y + height)
+    |> ExGuten.line_to(x, y + height)
+    |> ExGuten.line_to(x, y)
+  end
+
+  @impl true
+  def fill(pdf) do
+    ExGuten.fill(pdf)
+  end
+
+  @impl true
+  def set_dash(pdf, pattern, phase) do
+    ExGuten.set_dash(pdf, pattern, phase)
+  end
+
+  @impl true
+  def reset_dash(pdf) do
+    # ExGuten's set_dash guards against empty pattern, but [] 0 d is valid PDF
+    # for resetting to solid. Append the op directly.
+    ExGuten.PDF.append_current_op(pdf, {:set_dash, [], 0})
+  end
+
+  @impl true
   def set_line_width(pdf, width) do
     ExGuten.set_line_width(pdf, width)
   end
@@ -411,7 +447,7 @@ defmodule AtmlPdf.PdfBackend.ExGutenAdapter do
     {r / 255.0, g / 255.0, b / 255.0}
   end
 
-  defp normalize_color({r, g, b}), do: {r, g, b}
+  defp normalize_color({r, g, b}), do: {r * 1.0, g * 1.0, b * 1.0}
 
   defp normalize_color(color) when is_atom(color) do
     # Default to black for unknown colors

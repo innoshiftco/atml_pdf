@@ -1,0 +1,691 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Example: Phieu Ban Giao (Handover Slip)
+  Warehouse handover document with colored header, table header, and section labels.
+
+  Usage:
+    mix atml_pdf.render examples/phieu_ban_giao.xml -backend ExGutenAdapter
+-->
+<document page-width="595pt" page-height="842pt"
+          font-family="NotoSans" font-size="8pt"
+          padding="40px 30px">
+
+  <!-- Title header: dark background, white text -->
+  <row height="44pt" background-color="#1a1a1a">
+    <col width="fill" vertical-align="center" text-align="center" padding="6pt">
+      <row height="fit">
+        <col text-align="center" font-size="14pt" font-weight="bold" color="#ffffff">
+          PHIẾU BÀN GIAO
+        </col>
+      </row>
+      <row height="fit">
+        <col text-align="center" font-size="8pt" color="#aaaaaa">
+          HCM WAREHOUSE 2
+        </col>
+      </row>
+    </col>
+  </row>
+
+  <!-- Info section: 3 columns -->
+  <row height="90pt" border="solid 1pt #cccccc">
+
+    <!-- Chứng từ -->
+    <col width="34%" padding="8pt 10pt" border-right="solid 1pt #cccccc">
+      <row height="fit">
+        <col font-size="7pt" font-weight="bold">THÔNG TIN CHỨNG TỪ</col>
+      </row>
+      <row height="fit">
+        <col padding-top="5pt">
+          <row height="fit">
+            <col width="50pt" font-size="8pt">Phiên:</col>
+            <col width="fill" font-size="8pt" font-weight="bold" color="#111111">HO202604190001</col>
+          </row>
+        </col>
+      </row>
+      <row height="fit">
+        <col padding-top="3pt">
+          <row height="fit">
+            <col width="50pt" font-size="8pt">Ngày tạo:</col>
+            <col width="fill" font-size="8pt" color="#111111">11:53 04/21/2026</col>
+          </row>
+        </col>
+      </row>
+    </col>
+
+    <!-- Đơn vị vận chuyển -->
+    <col width="38%" padding="8pt 10pt" border-right="solid 1pt #cccccc">
+      <row height="fit">
+        <col font-size="7pt" font-weight="bold">ĐƠN VỊ VẬN CHUYỂN</col>
+      </row>
+      <row height="fit">
+        <col padding-top="5pt" font-size="8pt" font-weight="bold" color="#111111">
+          J&amp;T Express VN - Giao hàng Chuyển phát nhanh
+        </col>
+      </row>
+      <row height="fit">
+        <col padding-top="4pt" font-size="8pt">Mike</col>
+      </row>
+      <row height="fit">
+        <col padding-top="3pt" font-size="8pt">0123456789</col>
+      </row>
+      <row height="fit">
+        <col padding-top="3pt" font-size="8pt">51A-12345</col>
+      </row>
+    </col>
+
+    <!-- Kho hàng -->
+    <col width="fill" padding="8pt 10pt">
+      <row height="fit">
+        <col font-size="7pt" font-weight="bold">KHO HÀNG</col>
+      </row>
+      <row height="fit">
+        <col padding-top="5pt" font-size="8pt" font-weight="bold" color="#111111">HCM Warehouse 2</col>
+      </row>
+      <row height="fit">
+        <col padding-top="4pt" font-size="8pt">456 Vo Van Kiet, District 5</col>
+      </row>
+    </col>
+
+  </row>
+
+  <!-- Section label: DANH SÁCH KIỆN HÀNG -->
+  <row height="20pt" background-color="#f5f5f5" border-bottom="solid 1pt #cccccc" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="fill" padding="4pt 10pt" vertical-align="center" font-size="8pt" font-weight="bold">
+      DANH SÁCH KIỆN HÀNG
+    </col>
+  </row>
+
+  <!-- Table header -->
+  <row height="20pt" background-color="#1a1a1a" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center" font-size="7pt" font-weight="bold" color="#ffffff">STT</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" font-size="7pt" font-weight="bold" color="#ffffff">Đơn hàng</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" font-size="7pt" font-weight="bold" color="#ffffff">Mã vận đơn</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center" font-size="7pt" font-weight="bold" color="#ffffff">Loại</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" font-size="7pt" font-weight="bold" color="#ffffff" text-align="right">Khối lượng</col>
+  </row>
+
+  <!-- Table row 1 -->
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">1</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000022</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160012</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+
+  <!-- Table rows 2-21 -->
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">2</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000045</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160034</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">3</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000067</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160056</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">4</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000089</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160078</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center" color="#e02424">Nhập kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">5</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000102</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160090</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">6</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000124</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160112</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">7</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000136</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160125</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center" color="#e02424">Nhập kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">8</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000158</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160147</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">9</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000171</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160159</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">10</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000193</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160181</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center" color="#e02424">Nhập kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">11</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000205</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160203</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">12</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000218</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160216</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">13</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000230</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160228</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center" color="#e02424">Nhập kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">14</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000242</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160240</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">15</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000255</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160253</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">16</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000267</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160265</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center" color="#e02424">Nhập kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">17</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000279</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160277</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">18</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000291</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160289</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">19</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000303</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160301</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center" color="#e02424">Nhập kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">20</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000315</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160313</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">21</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000327</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604160325</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">22</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000022</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604162212</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">23</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000023</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604162312</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">24</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000024</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604162412</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center" color="#e02424">Nhập kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">25</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000025</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604162512</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">26</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000026</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604162612</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">27</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000027</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604162712</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">28</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000028</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604162812</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center" color="#e02424">Nhập kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">29</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000029</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604162912</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">30</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000030</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604163012</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">31</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000031</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604163112</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">32</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000032</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604163212</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center" color="#e02424">Nhập kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">33</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000033</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604163312</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">34</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000034</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604163412</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">35</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000035</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604163512</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">36</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000036</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604163612</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center" color="#e02424">Nhập kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">37</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000037</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604163712</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">38</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000038</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604163812</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">39</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000039</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604163912</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">40</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000040</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604164012</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center" color="#e02424">Nhập kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">41</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000041</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604164112</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">42</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000042</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604164212</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">43</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000043</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604164312</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">44</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000044</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604164412</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center" color="#e02424">Nhập kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">45</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000045</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604164512</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">46</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000046</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604164612</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">47</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000047</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604164712</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">48</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000048</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604164812</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center" color="#e02424">Nhập kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">49</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000049</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604164912</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">50</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000050</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604165012</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">51</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000051</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604165112</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">52</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000052</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604165212</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center" color="#e02424">Nhập kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">53</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000053</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604165312</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">54</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000054</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604165412</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">55</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000055</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604165512</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">56</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000056</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604165612</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center" color="#e02424">Nhập kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">57</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000057</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604165712</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">58</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000058</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604165812</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">59</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000059</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604165912</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">60</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000060</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604166012</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center" color="#e02424">Nhập kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">61</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000061</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604166112</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">62</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000062</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604166212</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">63</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000063</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604166312</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">64</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000064</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604166412</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center" color="#e02424">Nhập kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">65</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000065</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604166512</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">66</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000066</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604166612</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">67</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000067</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604166712</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">68</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000068</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604166812</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center" color="#e02424">Nhập kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">69</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000069</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604166912</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">70</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000070</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604167012</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+  <row height="20pt" border-bottom="solid 1pt #eeeeee" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="30pt"  padding="4pt 8pt" vertical-align="center">71</col>
+    <col width="fill"  padding="4pt 8pt" vertical-align="center" color="#111111">BC20260416000000071</col>
+    <col width="140pt" padding="4pt 8pt" vertical-align="center" color="#1a56db" font-weight="bold">QCTC2604167112</col>
+    <col width="80pt"  padding="4pt 8pt" vertical-align="center">Xuất kho</col>
+    <col width="60pt"  padding="4pt 8pt" vertical-align="center" text-align="right">--</col>
+  </row>
+
+  <!-- TỔNG KẾT section label -->
+  <row height="20pt" background-color="#f5f5f5" border-bottom="solid 1pt #cccccc" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="fill" padding="4pt 10pt" vertical-align="center" font-size="8pt" font-weight="bold">
+      TỔNG KẾT
+    </col>
+  </row>
+
+  <!-- Totals row -->
+  <row height="36pt" border-bottom="solid 1pt #cccccc" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="fill" padding="10pt 10pt">
+      <row height="fit">
+        <col width="fill" font-size="8pt">Đã bàn giao (Xuất):</col>
+        <col width="30pt" font-size="8pt" font-weight="bold" color="#111111" text-align="right">71</col>
+        <col width="20pt"></col>
+        <col width="100pt" font-size="8pt">Tổng khối lượng:</col>
+        <col width="fill" font-size="8pt" font-weight="bold" text-align="right">--</col>
+      </row>
+      <row height="fit">
+        <col width="fill" padding-top="4pt" font-size="8pt">Hoàn hàng (Nhập):</col>
+        <col width="30pt" padding-top="4pt" font-size="8pt" font-weight="bold" color="#111111" text-align="right">0</col>
+        <col width="120pt" padding-top="4pt"></col>
+        <col width="fill" padding-top="4pt"></col>
+      </row>
+    </col>
+  </row>
+
+  <!-- CHỮ KÝ section label -->
+  <row height="20pt" background-color="#f5f5f5" border-bottom="solid 1pt #cccccc" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <col width="fill" padding="4pt 10pt" vertical-align="center" font-size="8pt" font-weight="bold">
+      CHỮ KÝ
+    </col>
+  </row>
+
+  <!-- Signature row: names at top -->
+  <row height="82pt" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc">
+    <!-- Left: Quản lý kho -->
+    <col width="50%" padding="10pt 10pt" border-right="solid 1pt #eeeeee">
+      <row height="fit">
+        <col font-size="8pt" font-weight="bold" color="#111111">Quản lý kho</col>
+      </row>
+    </col>
+    <!-- Right: Đại diện đơn vị vận chuyển -->
+    <col width="fill" padding="10pt 10pt">
+      <row height="fit">
+        <col font-size="8pt" font-weight="bold" color="#111111">Đại diện đơn vị vận chuyển</col>
+      </row>
+      <row height="fit">
+        <col padding-top="4pt" font-size="8pt">Mike</col>
+      </row>
+    </col>
+  </row>
+
+  <!-- Signature row: dashed lines + Chữ ký / Ngày -->
+  <row height="26pt" border-left="solid 1pt #cccccc" border-right="solid 1pt #cccccc" border-bottom="solid 1pt #cccccc">
+    <col width="50%" padding="0 10pt" border-right="solid 1pt #eeeeee">
+      <row height="1pt">
+        <col border-bottom="dashed 1pt #aaaaaa"></col>
+      </row>
+      <row height="fit">
+        <col padding-top="10pt">
+          <row height="fit">
+            <col width="fill" font-size="8pt"></col>
+            <col width="140pt" font-size="8pt">Ngày: _____________</col>
+          </row>
+        </col>
+      </row>
+    </col>
+    <col width="fill" padding="0 10pt">
+      <row height="1pt" border-bottom="dashed 1pt #aaaaaa">
+        <col border-bottom="dashed 1pt #aaaaaa"></col>
+      </row>
+      <row height="fit">
+        <col padding-top="10pt">
+          <row height="fit">
+            <col width="fill" font-size="8pt"></col>
+            <col width="140pt" font-size="8pt">Ngày: _____________</col>
+          </row>
+        </col>
+      </row>
+    </col>
+  </row>
+
+</document>

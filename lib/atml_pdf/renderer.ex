@@ -167,6 +167,9 @@ defmodule AtmlPdf.Renderer do
   end
 
   defp render_row(ctx, %Row{} = row, origin_x, origin_y, font_ctx) do
+    # Draw background fill
+    ctx = draw_background(ctx, origin_x, origin_y, row.width, row.height, row.background_color)
+
     # Draw row borders
     ctx = draw_borders(ctx, origin_x, origin_y, row.width, row.height, row)
 
@@ -202,6 +205,9 @@ defmodule AtmlPdf.Renderer do
       font_size: col.font_size || font_ctx.font_size,
       font_weight: col.font_weight || font_ctx.font_weight
     }
+
+    # Draw background fill
+    ctx = draw_background(ctx, origin_x, origin_y, col.width, col.height, col.background_color)
 
     # Draw col borders
     ctx = draw_borders(ctx, origin_x, origin_y, col.width, col.height, col)
@@ -255,6 +261,16 @@ defmodule AtmlPdf.Renderer do
                       bold: font_ctx.font_weight == :bold
                     )
                   end)
+
+                ctx_acc =
+                  if col.color do
+                    rgb = parse_hex_color(col.color)
+                    update_backend(ctx_acc, fn state ->
+                      ctx_acc.backend_module.set_fill_color(state, rgb)
+                    end)
+                  else
+                    ctx_acc
+                  end
 
                 text_height = estimate_text_height(trimmed, inner_width, font_ctx.font_size)
 
@@ -453,6 +469,24 @@ defmodule AtmlPdf.Renderer do
   defp inline_image_src?(_), do: false
 
   # ---------------------------------------------------------------------------
+  # Background rendering
+  # ---------------------------------------------------------------------------
+
+  defp draw_background(ctx, _x, _y, _width, _height, nil), do: ctx
+
+  defp draw_background(ctx, x, layout_y, width, height, color) do
+    page_height = ctx.page_height
+    pdf_y = page_height - layout_y - height
+    rgb = parse_hex_color(color)
+
+    ctx
+    |> update_backend(fn state -> ctx.backend_module.set_fill_color(state, rgb) end)
+    |> update_backend(fn state -> ctx.backend_module.rectangle(state, {x, pdf_y}, {width, height}) end)
+    |> update_backend(fn state -> ctx.backend_module.fill(state) end)
+    |> update_backend(fn state -> ctx.backend_module.set_fill_color(state, {0, 0, 0}) end)
+  end
+
+  # ---------------------------------------------------------------------------
   # Border rendering
   # ---------------------------------------------------------------------------
 
@@ -476,14 +510,26 @@ defmodule AtmlPdf.Renderer do
 
   defp draw_border_line(ctx, :none, _from, _to), do: ctx
 
-  defp draw_border_line(ctx, {:border, _style, width, color}, from, to) do
+  defp draw_border_line(ctx, {:border, style, width, color}, from, to) do
     rgb = parse_hex_color(color)
 
     ctx
     |> update_backend(fn state -> ctx.backend_module.set_stroke_color(state, rgb) end)
     |> update_backend(fn state -> ctx.backend_module.set_line_width(state, width) end)
+    |> set_dash_for_style(style)
     |> update_backend(fn state -> ctx.backend_module.line(state, from, to) end)
     |> update_backend(fn state -> ctx.backend_module.stroke(state) end)
+    |> update_backend(fn state -> ctx.backend_module.reset_dash(state) end)
+  end
+
+  defp set_dash_for_style(ctx, :solid), do: ctx
+
+  defp set_dash_for_style(ctx, :dashed) do
+    update_backend(ctx, fn state -> ctx.backend_module.set_dash(state, [6, 3], 0) end)
+  end
+
+  defp set_dash_for_style(ctx, :dotted) do
+    update_backend(ctx, fn state -> ctx.backend_module.set_dash(state, [1, 2], 0) end)
   end
 
   # ---------------------------------------------------------------------------

@@ -62,6 +62,35 @@ defmodule AtmlPdf.PdfBackend.PdfAdapter do
   end
 
   @impl true
+  def set_fill_color(pid, color) do
+    Pdf.set_fill_color(pid, color)
+    pid
+  end
+
+  @impl true
+  def rectangle(pid, {x, y}, {width, height}) do
+    Pdf.rectangle(pid, {x, y}, {width, height})
+    pid
+  end
+
+  @impl true
+  def fill(pid) do
+    Pdf.fill(pid)
+    pid
+  end
+
+  @impl true
+  def set_dash(pid, _pattern, _phase) do
+    # pdf library does not support dash patterns — renders as solid
+    pid
+  end
+
+  @impl true
+  def reset_dash(pid) do
+    pid
+  end
+
+  @impl true
   def set_line_width(pid, width) do
     Pdf.set_line_width(pid, width)
     pid

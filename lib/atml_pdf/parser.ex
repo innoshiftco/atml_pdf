@@ -95,6 +95,7 @@ defmodule AtmlPdf.Parser do
       border_bottom: get_border_side(attrs, "border", "border-bottom"),
       border_left: get_border_side(attrs, "border", "border-left"),
       vertical_align: parse_vertical_align_value(get_attr(attrs, "vertical-align", "top")),
+      background_color: get_optional_attr(attrs, "background-color"),
       children: []
     }
 
@@ -132,6 +133,8 @@ defmodule AtmlPdf.Parser do
       font_weight: get_optional_font_weight(attrs, "font-weight"),
       text_align: parse_text_align_value(get_attr(attrs, "text-align", "left")),
       vertical_align: parse_vertical_align_value(get_attr(attrs, "vertical-align", "top")),
+      color: get_optional_attr(attrs, "color"),
+      background_color: get_optional_attr(attrs, "background-color"),
       children: []
     }
 

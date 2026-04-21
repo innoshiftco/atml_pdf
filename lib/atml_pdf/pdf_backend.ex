@@ -129,6 +129,66 @@ defmodule AtmlPdf.PdfBackend do
   @callback set_stroke_color(state :: term(), color :: atom() | tuple()) :: term()
 
   @doc """
+  Sets the fill color for drawing and text operations.
+
+  ## Parameters
+  - `state` - The backend state
+  - `color` - Color specification (e.g., `:black`, `{r, g, b}`)
+
+  ## Returns
+  Updated backend state
+  """
+  @callback set_fill_color(state :: term(), color :: atom() | tuple()) :: term()
+
+  @doc """
+  Draws a rectangle path (without filling or stroking).
+
+  ## Parameters
+  - `state` - The backend state
+  - `position` - `{x, y}` tuple for bottom-left corner
+  - `dimensions` - `{width, height}` tuple
+
+  ## Returns
+  Updated backend state
+  """
+  @callback rectangle(state :: term(), position :: {float(), float()}, dimensions :: {float(), float()}) :: term()
+
+  @doc """
+  Fills the current path with the current fill color.
+
+  ## Parameters
+  - `state` - The backend state
+
+  ## Returns
+  Updated backend state
+  """
+  @callback fill(state :: term()) :: term()
+
+  @doc """
+  Sets the line dash pattern for subsequent stroke operations.
+
+  ## Parameters
+  - `state` - The backend state
+  - `pattern` - List of on/off lengths in points (e.g. `[3, 2]`)
+  - `phase` - Offset into the pattern to start from
+
+  ## Returns
+  Updated backend state
+  """
+  @callback set_dash(state :: term(), pattern :: [number()], phase :: number()) :: term()
+
+  @doc """
+  Resets the line dash pattern to solid.
+
+  ## Parameters
+  - `state` - The backend state
+
+  ## Returns
+  Updated backend state
+  """
+  @callback reset_dash(state :: term()) :: term()
+
+  @doc """
   Sets the line width for drawing operations.
 
   ## Parameters

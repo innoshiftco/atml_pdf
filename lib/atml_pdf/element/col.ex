@@ -27,6 +27,8 @@ defmodule AtmlPdf.Element.Col do
           font_weight: :normal | :bold | nil,
           text_align: :left | :center | :right,
           vertical_align: :top | :center | :bottom,
+          color: String.t() | nil,
+          background_color: String.t() | nil,
           children: list()
         }
 
@@ -47,5 +49,7 @@ defmodule AtmlPdf.Element.Col do
             font_weight: nil,
             text_align: :left,
             vertical_align: :top,
+            color: nil,
+            background_color: nil,
             children: []
 end

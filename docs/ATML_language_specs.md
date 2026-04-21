@@ -166,6 +166,21 @@ border-left="dotted 2px #aaaaaa"
 
 ---
 
+### Colors
+
+Used for `color` (text color) and `background-color` (fill color).
+
+| Format | Example | Description |
+|---|---|---|
+| 6-digit hex | `#rrggbb` | Full hex color |
+| 3-digit hex | `#rgb` | Shorthand hex (expanded to 6-digit) |
+
+- `color` applies to text content in `<col>` elements.
+- `background-color` applies to `<row>` and `<col>` elements, filling the entire bounding box.
+- Neither attribute is inherited — set explicitly on each element.
+
+---
+
 ### Fonts
 
 All font attributes cascade from `<document>` → `<row>` → `<col>`. A child element uses the nearest ancestor's value unless it declares its own override.
@@ -227,6 +242,7 @@ A horizontal container. Children are laid out left to right. Rows stack vertical
 | `border-bottom` | border | — | Bottom side override |
 | `border-left` | border | — | Left side override |
 | `vertical-align` | `top` \| `center` \| `bottom` | `top` | Default vertical alignment for child col content |
+| `background-color` | color | — | Background fill color (hex) |
 
 ---
 
@@ -257,6 +273,8 @@ A vertical cell within a `<row>`. Columns are laid out horizontally within their
 | `font-weight` | `normal` \| `bold` | inherited | Font weight override |
 | `text-align` | `left` \| `center` \| `right` | `left` | Horizontal text alignment |
 | `vertical-align` | `top` \| `center` \| `bottom` | `top` | Vertical alignment of content |
+| `color` | color | — | Text color (hex) |
+| `background-color` | color | — | Background fill color (hex) |
 
 ---
 
@@ -445,4 +463,5 @@ When `min-*` / `max-*` are combined with a base dimension, the following order a
 | **Font weight** | keyword | `normal`, `bold` |
 | **Text align** | keyword | `left`, `center`, `right` |
 | **Vertical align** | keyword | `top`, `center`, `bottom` |
+| **Color** | `#rrggbb` or `#rgb` | `#ff0000`, `#f00` |
 | **Image src** | path or base64 | `/path/to/file.png`, `base64:<data>` |
