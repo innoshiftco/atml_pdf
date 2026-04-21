@@ -9,7 +9,7 @@ defmodule AtmlPdfTest do
   # ---------------------------------------------------------------------------
 
   @full_example_xml """
-  <document width="400pt" height="600pt" font-family="Helvetica" font-size="8pt">
+  <document page-width="400pt" page-height="600pt" font-family="Helvetica" font-size="8pt">
     <row height="60pt" border-bottom="solid 1pt #000000">
       <col width="80pt" vertical-align="center" text-align="center" padding="4pt">
       </col>
@@ -84,7 +84,7 @@ defmodule AtmlPdfTest do
     end
 
     test "returns {:ok, binary} for a minimal document" do
-      xml = ~s|<document width="100pt" height="100pt"></document>|
+      xml = ~s|<document page-width="100pt" page-height="100pt"></document>|
       assert {:ok, binary} = AtmlPdf.render_binary(xml)
       assert byte_size(binary) > 0
     end
@@ -140,7 +140,7 @@ defmodule AtmlPdfTest do
       image_b64 = tiny_png_base64()
 
       xml = """
-      <document width="400pt" height="600pt" font-family="Helvetica" font-size="8pt">
+      <document page-width="400pt" page-height="600pt" font-family="Helvetica" font-size="8pt">
         <row height="60pt" border-bottom="solid 1pt #000000">
           <col width="fill" vertical-align="center" text-align="center"
                font-size="14pt" font-weight="bold">
@@ -195,7 +195,7 @@ defmodule AtmlPdfTest do
       image_b64 = tiny_png_base64()
 
       xml = """
-      <document width="400pt" height="300pt" font-family="Helvetica" font-size="8pt">
+      <document page-width="400pt" page-height="300pt" font-family="Helvetica" font-size="8pt">
         <row height="80pt" border-bottom="solid 1pt #000000">
           <col width="fill" vertical-align="center" text-align="center" padding="4pt">
             <img src="base64:#{image_b64}" width="60pt" height="60pt" />

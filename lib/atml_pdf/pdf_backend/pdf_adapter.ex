@@ -97,6 +97,13 @@ defmodule AtmlPdf.PdfBackend.PdfAdapter do
   end
 
   @impl true
+  def add_page(pid) do
+    %{width: w, height: h} = Pdf.size(pid)
+    Pdf.add_page(pid, [round(w), round(h)])
+    pid
+  end
+
+  @impl true
   def cleanup(pid) do
     Pdf.cleanup(pid)
   end

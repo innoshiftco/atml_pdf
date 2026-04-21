@@ -20,6 +20,7 @@
    - [`<row>`](#row)
    - [`<col>`](#col)
    - [`<img>`](#img)
+   - [`<break>`](#break)
 6. [Inheritance](#inheritance)
 7. [Constraint Resolution](#constraint-resolution)
 8. [Full Example](#full-example)
@@ -41,7 +42,7 @@ Every ATML file must begin with an XML declaration followed by a single `<docume
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<document width="400pt" height="600pt">
+<document page-width="400pt" page-height="600pt">
 
   <row>
     <col> ... </col>
@@ -68,20 +69,22 @@ The layout model alternates strictly between rows and columns. The valid parent�
 
 ```
 <document>
-  └── <row>
-        └── <col>
-              ├── text / <img>
-              └── <row>              ← must interpose a row before nesting cols
-                    └── <col>
-                          └── text / <img>
+  ├── <row>
+  │     └── <col>
+  │           ├── text / <img>
+  │           └── <row>              ← must interpose a row before nesting cols
+  │                 └── <col>
+  │                       └── text / <img>
+  └── <break />                      ← forces a page break between rows
 ```
 
 **Rules:**
 
-- `<document>` may only contain `<row>` children.
+- `<document>` may only contain `<row>` and `<break>` children.
 - `<row>` may only contain `<col>` children.
 - `<col>` may contain text, `<img>`, or `<row>` children. Mixed content (text alongside child elements) is permitted.
 - A `<col>` **cannot** be a direct child of another `<col>`. This is a parse error.
+- `<break>` has no attributes and no children. It is a self-closing tag.
 
 ---
 
@@ -188,13 +191,13 @@ All font attributes cascade from `<document>` → `<row>` → `<col>`. A child e
 
 ### `<document>`
 
-The root element. Defines the physical dimensions of the label canvas. Exactly one per document.
+The root element. Defines the physical dimensions of each page. Exactly one per document.
 
 | Attribute | Type | Default | Notes |
 |---|---|---|---|
-| `width` | dimension | **required** | Physical document width |
-| `height` | dimension | **required** | Physical document height |
-| `padding` | spacing | `0` | Outer inset applied to all direct child rows |
+| `page-width` | dimension | **required** | Physical page width |
+| `page-height` | dimension | **required** | Physical page height |
+| `padding` | spacing | `0` | Outer inset applied to all direct child rows on every page |
 | `font-family` | string | `"Helvetica"` | Inherited by all descendants |
 | `font-size` | pt | `8pt` | Inherited by all descendants |
 | `font-weight` | `normal` \| `bold` | `normal` | Inherited by all descendants |
@@ -286,6 +289,34 @@ src="base64:iVBORw0KGgoAAAANS..."
 
 ---
 
+### `<break>`
+
+A page break marker. Must be a direct child of `<document>`. When the renderer encounters a `<break>`, it ends the current page and starts a new one. Rows after the `<break>` are rendered from the top of the next page.
+
+`<break>` has **no attributes** and **no children**. It is always self-closing.
+
+```xml
+<document page-width="400pt" page-height="600pt">
+
+  <!-- Label 1 — rendered on page 1 -->
+  <row height="50pt"> ... </row>
+  <row height="fill"> ... </row>
+
+  <break />
+
+  <!-- Label 2 — rendered on page 2 -->
+  <row height="50pt"> ... </row>
+  <row height="fill"> ... </row>
+
+</document>
+```
+
+**Behaviour with `multiple_page: false`:** when the renderer is configured for single-page output, `<break>` is silently ignored and all rows are clipped to the first page.
+
+**`fill` height scoping:** `<break>` acts as a boundary for `fill` height resolution. Each page segment resolves its `fill` rows independently against the full page height, so a `fill` row on page 1 is not affected by rows on page 2.
+
+---
+
 ## Inheritance
 
 Font attributes cascade top-down through the element tree:
@@ -320,8 +351,8 @@ When `min-*` / `max-*` are combined with a base dimension, the following order a
 ## Full Example
 
 ```xml
-<?Xml version="1.0" encoding="UTF-8"?>
-<document width="400pt" height="600pt" font-family="Helvetica" font-size="8pt">
+<?xml version="1.0" encoding="UTF-8"?>
+<document page-width="400pt" page-height="600pt" font-family="Helvetica" font-size="8pt">
 
   <!-- Header: logo + title -->
   <row height="60pt" border-bottom="solid 1pt #000000">

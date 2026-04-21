@@ -28,7 +28,7 @@ defmodule AtmlPdf do
 
   ## Examples
 
-      iex> xml = ~s|<document width="100pt" height="100pt"></document>|
+      iex> xml = ~s|<document page-width="100pt" page-height="100pt"></document>|
       iex> {:ok, binary} = AtmlPdf.render_binary(xml)
       iex> is_binary(binary) and byte_size(binary) > 0
       true
@@ -51,7 +51,7 @@ defmodule AtmlPdf do
 
   ## Examples
 
-      iex> xml = ~s|<document width="100pt" height="100pt"></document>|
+      iex> xml = ~s|<document page-width="100pt" page-height="100pt"></document>|
       iex> path = Path.join(System.tmp_dir!(), "atml_test_render.pdf")
       iex> AtmlPdf.render(xml, path)
       :ok
@@ -83,7 +83,7 @@ defmodule AtmlPdf do
 
   ## Examples
 
-      iex> xml = ~s|<document width="100pt" height="100pt"></document>|
+      iex> xml = ~s|<document page-width="100pt" page-height="100pt"></document>|
       iex> {:ok, binary} = AtmlPdf.render_binary(xml)
       iex> is_binary(binary) and byte_size(binary) > 0
       true

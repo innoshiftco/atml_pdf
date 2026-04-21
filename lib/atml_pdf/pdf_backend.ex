@@ -199,6 +199,17 @@ defmodule AtmlPdf.PdfBackend do
   @callback write_to(state :: term(), path :: String.t()) :: :ok | {:error, term()}
 
   @doc """
+  Adds a new page to the PDF document and makes it the current page.
+
+  ## Parameters
+  - `state` - The backend state
+
+  ## Returns
+  Updated backend state
+  """
+  @callback add_page(state :: term()) :: term()
+
+  @doc """
   Cleans up backend resources (e.g., closes processes, releases memory).
 
   ## Parameters

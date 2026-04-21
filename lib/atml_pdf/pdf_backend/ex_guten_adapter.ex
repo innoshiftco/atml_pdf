@@ -290,6 +290,11 @@ defmodule AtmlPdf.PdfBackend.ExGutenAdapter do
   end
 
   @impl true
+  def add_page(pdf) do
+    ExGuten.add_page(pdf)
+  end
+
+  @impl true
   def cleanup(_pdf) do
     # ExGuten uses immutable structs, no cleanup needed
     :ok

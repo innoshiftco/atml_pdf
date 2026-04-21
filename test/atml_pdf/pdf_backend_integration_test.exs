@@ -6,7 +6,7 @@ defmodule AtmlPdf.PdfBackendIntegrationTest do
   use ExUnit.Case, async: true
 
   @simple_xml """
-  <document width="200pt" height="100pt" font-family="Helvetica" font-size="12pt">
+  <document page-width="200pt" page-height="100pt" font-family="Helvetica" font-size="12pt">
     <row height="fill">
       <col width="fill">Hello, World!</col>
     </row>
@@ -95,7 +95,7 @@ defmodule AtmlPdf.PdfBackendIntegrationTest do
       data_uri = "data:image/png;base64,#{Base.encode64(tiny_png)}"
 
       xml = """
-      <document width="200pt" height="150pt">
+      <document page-width="200pt" page-height="150pt">
         <row height="fill">
           <col width="fill">
             <img src="#{data_uri}" width="50pt" height="50pt" />
@@ -112,7 +112,7 @@ defmodule AtmlPdf.PdfBackendIntegrationTest do
 
     test "renders document with borders" do
       xml = """
-      <document width="200pt" height="100pt">
+      <document page-width="200pt" page-height="100pt">
         <row height="50pt" border-bottom="solid 2pt #000000">
           <col width="100pt" border-right="solid 1pt #cccccc">Left</col>
           <col width="fill">Right</col>
@@ -128,7 +128,7 @@ defmodule AtmlPdf.PdfBackendIntegrationTest do
 
     test "renders document with nested rows" do
       xml = """
-      <document width="200pt" height="200pt">
+      <document page-width="200pt" page-height="200pt">
         <row height="100pt">
           <col width="fill">
             <row height="50pt">
@@ -150,7 +150,7 @@ defmodule AtmlPdf.PdfBackendIntegrationTest do
 
     test "renders document with font overrides" do
       xml = """
-      <document width="200pt" height="100pt" font-family="Helvetica" font-size="10pt">
+      <document page-width="200pt" page-height="100pt" font-family="Helvetica" font-size="10pt">
         <row height="50pt">
           <col width="fill" font-size="14pt" font-weight="bold">Large Bold</col>
         </row>
@@ -168,7 +168,7 @@ defmodule AtmlPdf.PdfBackendIntegrationTest do
 
     test "renders document with various alignments" do
       xml = """
-      <document width="200pt" height="150pt">
+      <document page-width="200pt" page-height="150pt">
         <row height="50pt">
           <col width="fill" text-align="left" vertical-align="top">Top Left</col>
         </row>

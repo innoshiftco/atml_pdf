@@ -35,7 +35,7 @@ defmodule AtmlPdf.Layout do
   Font fields on every `Col` node are fully resolved strings/numbers.
   """
 
-  alias AtmlPdf.Element.{Col, Document, Img, Row}
+  alias AtmlPdf.Element.{Break, Col, Document, Img, Row}
 
   @typedoc "Resolved dimension — a plain point value."
   @type pt :: float()
@@ -83,8 +83,8 @@ defmodule AtmlPdf.Layout do
       font_weight: doc.font_weight
     }
 
-    doc_width = to_pt(doc.width)
-    doc_height = to_pt(doc.height)
+    doc_width = to_pt(doc.page_width)
+    doc_height = to_pt(doc.page_height)
 
     # Calculate inner dimensions after subtracting document padding
     {pad_top, pad_right, pad_bottom, pad_left} = normalise_padding(doc.padding)
@@ -96,8 +96,8 @@ defmodule AtmlPdf.Layout do
     {:ok,
      %{
        doc
-       | width: doc_width,
-         height: doc_height,
+       | page_width: doc_width,
+         page_height: doc_height,
          children: resolved_children
      }}
   rescue
@@ -114,10 +114,33 @@ defmodule AtmlPdf.Layout do
 
   # Resolves a list of rows stacked vertically within a parent container of
   # `parent_width` × `parent_height`.
+  #
+  # `<break>` elements split the list into independent segments. Each segment
+  # resolves `fill` heights against the full `parent_height` independently,
+  # so a fill row on page 1 does not share space with rows on page 2.
   defp resolve_rows(rows, parent_width, parent_height, font_ctx) do
-    # First pass: resolve heights for all non-fill rows.
-    # `fill` rows share what's left after the fixed/fit rows consume their space.
-    # Build `acc` with prepends (O(1) each) then reverse once at the end (O(n)).
+    rows
+    |> split_at_breaks()
+    |> Enum.intersperse(:break)
+    |> Enum.flat_map(fn
+      :break -> [%Break{}]
+      segment -> resolve_row_segment(segment, parent_width, parent_height, font_ctx)
+    end)
+  end
+
+  # Split a row list into segments separated by %Break{} elements.
+  defp split_at_breaks(rows) do
+    {segments, last} =
+      Enum.reduce(rows, {[], []}, fn
+        %Break{}, {segments, current} -> {segments ++ [current], []}
+        row, {segments, current} -> {segments, current ++ [row]}
+      end)
+
+    segments ++ [last]
+  end
+
+  # Resolve a single segment (no breaks) of rows against parent_height.
+  defp resolve_row_segment(rows, parent_width, parent_height, font_ctx) do
     {reversed, fill_count, used_height} =
       Enum.reduce(rows, {[], 0, 0.0}, fn row, {acc, fills, used} ->
         case row do

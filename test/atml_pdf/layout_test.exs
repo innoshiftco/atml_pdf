@@ -18,15 +18,15 @@ defmodule AtmlPdf.LayoutTest do
 
   describe "resolve/1 – document dimensions" do
     test "pt dimensions are converted to floats" do
-      doc = resolve!(~s|<document width="400pt" height="600pt"></document>|)
-      assert doc.width == 400.0
-      assert doc.height == 600.0
+      doc = resolve!(~s|<document page-width="400pt" page-height="600pt"></document>|)
+      assert doc.page_width == 400.0
+      assert doc.page_height == 600.0
     end
 
     test "px dimensions are converted to pt (1px = 0.75pt)" do
-      doc = resolve!(~s|<document width="400px" height="600px"></document>|)
-      assert doc.width == 300.0
-      assert doc.height == 450.0
+      doc = resolve!(~s|<document page-width="400px" page-height="600px"></document>|)
+      assert doc.page_width == 300.0
+      assert doc.page_height == 450.0
     end
   end
 
@@ -38,7 +38,7 @@ defmodule AtmlPdf.LayoutTest do
     test "document font defaults propagate to col when col sets nothing" do
       doc =
         resolve!("""
-        <document width="100pt" height="100pt"
+        <document page-width="100pt" page-height="100pt"
                   font-family="Helvetica" font-size="8pt" font-weight="normal">
           <row><col></col></row>
         </document>
@@ -53,7 +53,7 @@ defmodule AtmlPdf.LayoutTest do
     test "col overrides font-size, inherits the rest" do
       doc =
         resolve!("""
-        <document width="100pt" height="100pt"
+        <document page-width="100pt" page-height="100pt"
                   font-family="Courier" font-size="8pt" font-weight="normal">
           <row><col font-size="14pt"></col></row>
         </document>
@@ -68,7 +68,7 @@ defmodule AtmlPdf.LayoutTest do
     test "col overrides font-weight, inherits font-family and font-size" do
       doc =
         resolve!("""
-        <document width="100pt" height="100pt"
+        <document page-width="100pt" page-height="100pt"
                   font-family="Arial" font-size="10pt" font-weight="normal">
           <row><col font-weight="bold"></col></row>
         </document>
@@ -83,7 +83,7 @@ defmodule AtmlPdf.LayoutTest do
     test "col overrides all three font attrs" do
       doc =
         resolve!("""
-        <document width="100pt" height="100pt"
+        <document page-width="100pt" page-height="100pt"
                   font-family="Helvetica" font-size="8pt" font-weight="normal">
           <row><col font-family="Times" font-size="12pt" font-weight="bold"></col></row>
         </document>
@@ -98,7 +98,7 @@ defmodule AtmlPdf.LayoutTest do
     test "font inheritance cascades through nested rows into inner cols" do
       doc =
         resolve!("""
-        <document width="100pt" height="200pt" font-family="Helvetica" font-size="8pt">
+        <document page-width="100pt" page-height="200pt" font-family="Helvetica" font-size="8pt">
           <row>
             <col font-size="12pt">
               <row><col font-weight="bold"></col></row>
@@ -120,7 +120,7 @@ defmodule AtmlPdf.LayoutTest do
     test "sibling cols can have different font overrides independently" do
       doc =
         resolve!("""
-        <document width="200pt" height="100pt" font-family="Helvetica" font-size="8pt">
+        <document page-width="200pt" page-height="100pt" font-family="Helvetica" font-size="8pt">
           <row>
             <col font-size="10pt"></col>
             <col font-weight="bold"></col>
@@ -145,7 +145,7 @@ defmodule AtmlPdf.LayoutTest do
     test "row with fixed pt height" do
       doc =
         resolve!("""
-        <document width="100pt" height="200pt">
+        <document page-width="100pt" page-height="200pt">
           <row height="60pt"></row>
         </document>
         """)
@@ -157,7 +157,7 @@ defmodule AtmlPdf.LayoutTest do
     test "row width defaults to fill (equals document width)" do
       doc =
         resolve!("""
-        <document width="100pt" height="200pt">
+        <document page-width="100pt" page-height="200pt">
           <row height="20pt"></row>
         </document>
         """)
@@ -169,7 +169,7 @@ defmodule AtmlPdf.LayoutTest do
     test "col with fixed pt width" do
       doc =
         resolve!("""
-        <document width="200pt" height="100pt">
+        <document page-width="200pt" page-height="100pt">
           <row height="40pt"><col width="80pt"></col></row>
         </document>
         """)
@@ -181,7 +181,7 @@ defmodule AtmlPdf.LayoutTest do
     test "col with px width is converted to pt" do
       doc =
         resolve!("""
-        <document width="200pt" height="100pt">
+        <document page-width="200pt" page-height="100pt">
           <row height="40pt"><col width="80px"></col></row>
         </document>
         """)
@@ -193,7 +193,7 @@ defmodule AtmlPdf.LayoutTest do
     test "col with percentage width resolves relative to row width" do
       doc =
         resolve!("""
-        <document width="200pt" height="100pt">
+        <document page-width="200pt" page-height="100pt">
           <row height="40pt">
             <col width="50%"></col>
             <col width="50%"></col>
@@ -209,7 +209,7 @@ defmodule AtmlPdf.LayoutTest do
     test "col with 33% width resolves correctly" do
       doc =
         resolve!("""
-        <document width="300pt" height="100pt">
+        <document page-width="300pt" page-height="100pt">
           <row height="40pt"><col width="33%"></col></row>
         </document>
         """)
@@ -227,7 +227,7 @@ defmodule AtmlPdf.LayoutTest do
     test "single fill col consumes entire row width" do
       doc =
         resolve!("""
-        <document width="200pt" height="100pt">
+        <document page-width="200pt" page-height="100pt">
           <row height="40pt"><col width="fill"></col></row>
         </document>
         """)
@@ -239,7 +239,7 @@ defmodule AtmlPdf.LayoutTest do
     test "two fill cols share row width equally" do
       doc =
         resolve!("""
-        <document width="200pt" height="100pt">
+        <document page-width="200pt" page-height="100pt">
           <row height="40pt">
             <col width="fill"></col>
             <col width="fill"></col>
@@ -255,7 +255,7 @@ defmodule AtmlPdf.LayoutTest do
     test "fill col takes remaining width after fixed col" do
       doc =
         resolve!("""
-        <document width="200pt" height="100pt">
+        <document page-width="200pt" page-height="100pt">
           <row height="40pt">
             <col width="80pt"></col>
             <col width="fill"></col>
@@ -271,7 +271,7 @@ defmodule AtmlPdf.LayoutTest do
     test "three fill cols share remaining space after fixed col" do
       doc =
         resolve!("""
-        <document width="300pt" height="100pt">
+        <document page-width="300pt" page-height="100pt">
           <row height="40pt">
             <col width="60pt"></col>
             <col width="fill"></col>
@@ -290,7 +290,7 @@ defmodule AtmlPdf.LayoutTest do
     test "single fill row consumes entire document height" do
       doc =
         resolve!("""
-        <document width="100pt" height="200pt">
+        <document page-width="100pt" page-height="200pt">
           <row height="fill"><col></col></row>
         </document>
         """)
@@ -302,7 +302,7 @@ defmodule AtmlPdf.LayoutTest do
     test "two fill rows share document height equally" do
       doc =
         resolve!("""
-        <document width="100pt" height="200pt">
+        <document page-width="100pt" page-height="200pt">
           <row height="fill"><col></col></row>
           <row height="fill"><col></col></row>
         </document>
@@ -316,7 +316,7 @@ defmodule AtmlPdf.LayoutTest do
     test "fill row takes remaining height after fixed row" do
       doc =
         resolve!("""
-        <document width="100pt" height="200pt">
+        <document page-width="100pt" page-height="200pt">
           <row height="60pt"><col></col></row>
           <row height="fill"><col></col></row>
         </document>
@@ -336,7 +336,7 @@ defmodule AtmlPdf.LayoutTest do
     test "fit row height is non-negative" do
       doc =
         resolve!("""
-        <document width="100pt" height="200pt">
+        <document page-width="100pt" page-height="200pt">
           <row height="fit"><col>hello</col></row>
         </document>
         """)
@@ -348,7 +348,7 @@ defmodule AtmlPdf.LayoutTest do
     test "fit row with text content has positive height" do
       doc =
         resolve!("""
-        <document width="100pt" height="200pt" font-size="10pt">
+        <document page-width="100pt" page-height="200pt" font-size="10pt">
           <row height="fit"><col>hello world</col></row>
         </document>
         """)
@@ -360,7 +360,7 @@ defmodule AtmlPdf.LayoutTest do
     test "empty fit row has zero height" do
       doc =
         resolve!("""
-        <document width="100pt" height="200pt">
+        <document page-width="100pt" page-height="200pt">
           <row height="fit"><col></col></row>
         </document>
         """)
@@ -372,7 +372,7 @@ defmodule AtmlPdf.LayoutTest do
     test "fit col height fills its row by default" do
       doc =
         resolve!("""
-        <document width="100pt" height="200pt">
+        <document page-width="100pt" page-height="200pt">
           <row height="50pt"><col height="fill"></col></row>
         </document>
         """)
@@ -391,7 +391,7 @@ defmodule AtmlPdf.LayoutTest do
     test "min-height is applied as a floor on a fixed row" do
       doc =
         resolve!("""
-        <document width="100pt" height="200pt">
+        <document page-width="100pt" page-height="200pt">
           <row height="20pt" min-height="40pt"><col></col></row>
         </document>
         """)
@@ -403,7 +403,7 @@ defmodule AtmlPdf.LayoutTest do
     test "max-height is applied as a ceiling on a fixed row" do
       doc =
         resolve!("""
-        <document width="100pt" height="200pt">
+        <document page-width="100pt" page-height="200pt">
           <row height="80pt" max-height="50pt"><col></col></row>
         </document>
         """)
@@ -415,7 +415,7 @@ defmodule AtmlPdf.LayoutTest do
     test "row height within min/max range is unchanged" do
       doc =
         resolve!("""
-        <document width="100pt" height="200pt">
+        <document page-width="100pt" page-height="200pt">
           <row height="40pt" min-height="20pt" max-height="60pt"><col></col></row>
         </document>
         """)
@@ -427,7 +427,7 @@ defmodule AtmlPdf.LayoutTest do
     test "min-width is applied as a floor on a col" do
       doc =
         resolve!("""
-        <document width="200pt" height="100pt">
+        <document page-width="200pt" page-height="100pt">
           <row height="40pt">
             <col width="30pt" min-width="60pt"></col>
           </row>
@@ -441,7 +441,7 @@ defmodule AtmlPdf.LayoutTest do
     test "max-width is applied as a ceiling on a col" do
       doc =
         resolve!("""
-        <document width="200pt" height="100pt">
+        <document page-width="200pt" page-height="100pt">
           <row height="40pt">
             <col width="100pt" max-width="50pt"></col>
           </row>
@@ -455,7 +455,7 @@ defmodule AtmlPdf.LayoutTest do
     test "min-width on fill col constrains fill distribution" do
       doc =
         resolve!("""
-        <document width="200pt" height="100pt">
+        <document page-width="200pt" page-height="100pt">
           <row height="40pt">
             <col width="fill" min-width="120pt"></col>
             <col width="fill"></col>
@@ -473,7 +473,7 @@ defmodule AtmlPdf.LayoutTest do
     test "max-width on fill col constrains fill distribution" do
       doc =
         resolve!("""
-        <document width="200pt" height="100pt">
+        <document page-width="200pt" page-height="100pt">
           <row height="40pt">
             <col width="fill" max-width="60pt"></col>
             <col width="fill"></col>
@@ -490,7 +490,7 @@ defmodule AtmlPdf.LayoutTest do
     test "min and max constraints are cleared after resolution" do
       doc =
         resolve!("""
-        <document width="100pt" height="200pt">
+        <document page-width="100pt" page-height="200pt">
           <row height="40pt" min-height="10pt" max-height="80pt">
             <col min-width="5pt" max-width="200pt"></col>
           </row>
@@ -507,7 +507,7 @@ defmodule AtmlPdf.LayoutTest do
     test "min-height with % is resolved relative to parent height" do
       doc =
         resolve!("""
-        <document width="100pt" height="200pt">
+        <document page-width="100pt" page-height="200pt">
           <row height="40pt" min-height="50%"><col></col></row>
         </document>
         """)
@@ -526,7 +526,7 @@ defmodule AtmlPdf.LayoutTest do
     test "img with fixed pt dimensions resolves to floats" do
       doc =
         resolve!("""
-        <document width="200pt" height="200pt">
+        <document page-width="200pt" page-height="200pt">
           <row height="80pt">
             <col><img src="/logo.png" width="60pt" height="40pt" /></col>
           </row>
@@ -541,7 +541,7 @@ defmodule AtmlPdf.LayoutTest do
     test "img with fit dimensions resolves to 0.0" do
       doc =
         resolve!("""
-        <document width="200pt" height="200pt">
+        <document page-width="200pt" page-height="200pt">
           <row height="80pt">
             <col><img src="base64:abc" /></col>
           </row>
@@ -556,7 +556,7 @@ defmodule AtmlPdf.LayoutTest do
     test "img with fill width fills parent col width" do
       doc =
         resolve!("""
-        <document width="200pt" height="200pt">
+        <document page-width="200pt" page-height="200pt">
           <row height="80pt">
             <col width="120pt"><img src="/bar.png" width="fill" height="40pt" /></col>
           </row>
@@ -570,7 +570,7 @@ defmodule AtmlPdf.LayoutTest do
     test "img min/max constraints are cleared after resolution" do
       doc =
         resolve!("""
-        <document width="200pt" height="200pt">
+        <document page-width="200pt" page-height="200pt">
           <row height="80pt">
             <col>
               <img src="/logo.png" width="60pt" height="40pt"
@@ -597,7 +597,7 @@ defmodule AtmlPdf.LayoutTest do
     test "all dimension fields in resolved tree are plain floats" do
       doc =
         resolve!("""
-        <document width="400pt" height="600pt">
+        <document page-width="400pt" page-height="600pt">
           <row height="60pt">
             <col width="80pt"></col>
             <col width="fill"></col>
@@ -611,8 +611,8 @@ defmodule AtmlPdf.LayoutTest do
         </document>
         """)
 
-      assert is_float(doc.width)
-      assert is_float(doc.height)
+      assert is_float(doc.page_width)
+      assert is_float(doc.page_height)
 
       Enum.each(doc.children, fn %Row{} = row ->
         assert is_float(row.width)
@@ -628,7 +628,7 @@ defmodule AtmlPdf.LayoutTest do
     test "all col font fields are resolved (non-nil) after layout" do
       doc =
         resolve!("""
-        <document width="100pt" height="100pt" font-family="Helvetica" font-size="9pt">
+        <document page-width="100pt" page-height="100pt" font-family="Helvetica" font-size="9pt">
           <row height="20pt">
             <col></col>
             <col font-size="11pt" font-weight="bold"></col>
@@ -647,7 +647,7 @@ defmodule AtmlPdf.LayoutTest do
     end
 
     test "resolve/1 returns error tuple for non-Document input" do
-      assert {:error, _} = Layout.resolve(%Document{width: nil, height: nil})
+      assert {:error, _} = Layout.resolve(%Document{page_width: nil, page_height: nil})
     end
 
     test "resolve/1 returns a specific error for a plain map" do
@@ -669,7 +669,7 @@ defmodule AtmlPdf.LayoutTest do
     test "fit col width is non-negative" do
       doc =
         resolve!("""
-        <document width="200pt" height="100pt">
+        <document page-width="200pt" page-height="100pt">
           <row height="50pt">
             <col width="fit">hello</col>
           </row>
@@ -683,7 +683,7 @@ defmodule AtmlPdf.LayoutTest do
     test "fit col width is content-based (wider text → wider col)" do
       short_doc =
         resolve!("""
-        <document width="400pt" height="100pt" font-size="10pt">
+        <document page-width="400pt" page-height="100pt" font-size="10pt">
           <row height="50pt">
             <col width="fit">hi</col>
           </row>
@@ -692,7 +692,7 @@ defmodule AtmlPdf.LayoutTest do
 
       long_doc =
         resolve!("""
-        <document width="400pt" height="100pt" font-size="10pt">
+        <document page-width="400pt" page-height="100pt" font-size="10pt">
           <row height="50pt">
             <col width="fit">a much longer piece of text here</col>
           </row>
@@ -707,7 +707,7 @@ defmodule AtmlPdf.LayoutTest do
     test "fit col width is a float after resolution" do
       doc =
         resolve!("""
-        <document width="200pt" height="100pt">
+        <document page-width="200pt" page-height="100pt">
           <row height="50pt">
             <col width="fit">some text</col>
           </row>
@@ -721,7 +721,7 @@ defmodule AtmlPdf.LayoutTest do
     test "fit col width respects max-width constraint" do
       doc =
         resolve!("""
-        <document width="400pt" height="100pt" font-size="10pt">
+        <document page-width="400pt" page-height="100pt" font-size="10pt">
           <row height="50pt">
             <col width="fit" max-width="20pt">a very long line of text that would otherwise be wide</col>
           </row>
@@ -735,7 +735,7 @@ defmodule AtmlPdf.LayoutTest do
     test "fit col width respects min-width constraint" do
       doc =
         resolve!("""
-        <document width="400pt" height="100pt" font-size="10pt">
+        <document page-width="400pt" page-height="100pt" font-size="10pt">
           <row height="50pt">
             <col width="fit" min-width="100pt">x</col>
           </row>
@@ -749,7 +749,7 @@ defmodule AtmlPdf.LayoutTest do
     test "min/max cleared to nil after fit col resolution" do
       doc =
         resolve!("""
-        <document width="400pt" height="100pt">
+        <document page-width="400pt" page-height="100pt">
           <row height="50pt">
             <col width="fit" min-width="10pt" max-width="200pt">text</col>
           </row>
