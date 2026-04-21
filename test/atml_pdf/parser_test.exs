@@ -1,7 +1,11 @@
 defmodule AtmlPdf.ParserTest do
   use ExUnit.Case, async: true
 
-  alias AtmlPdf.Element.{Break, Col, Document, Img, Row}
+  alias AtmlPdf.Element.Break
+  alias AtmlPdf.Element.Col
+  alias AtmlPdf.Element.Document
+  alias AtmlPdf.Element.Img
+  alias AtmlPdf.Element.Row
   alias AtmlPdf.Parser
 
   # ---------------------------------------------------------------------------

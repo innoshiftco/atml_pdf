@@ -50,6 +50,9 @@ defmodule Mix.Tasks.AtmlPdf.Render do
 
   use Mix.Task
 
+  alias AtmlPdf.PdfBackend.ExGutenAdapter
+  alias AtmlPdf.PdfBackend.PdfAdapter
+
   @impl Mix.Task
   def run(args) do
     # Ensure the application and its deps are started so Pdf.* calls work.
@@ -102,10 +105,10 @@ defmodule Mix.Tasks.AtmlPdf.Render do
         []
 
       "PdfAdapter" ->
-        [backend: AtmlPdf.PdfBackend.PdfAdapter]
+        [backend: PdfAdapter]
 
       "ExGutenAdapter" ->
-        [backend: AtmlPdf.PdfBackend.ExGutenAdapter]
+        [backend: ExGutenAdapter]
 
       backend ->
         Mix.shell().info("Unknown backend: #{backend}, using default")
@@ -124,8 +127,8 @@ defmodule Mix.Tasks.AtmlPdf.Render do
   defp render(template_path, output_path, opts) do
     backend_name =
       case Keyword.get(opts, :backend) do
-        AtmlPdf.PdfBackend.PdfAdapter -> "PdfAdapter"
-        AtmlPdf.PdfBackend.ExGutenAdapter -> "ExGutenAdapter"
+        PdfAdapter -> "PdfAdapter"
+        ExGutenAdapter -> "ExGutenAdapter"
         nil -> "default"
         other -> inspect(other)
       end
@@ -136,9 +139,7 @@ defmodule Mix.Tasks.AtmlPdf.Render do
       Mix.shell().info("Written: #{output_path}")
     else
       {:read, {:error, reason}} ->
-        Mix.shell().error(
-          "Error: cannot read \"#{template_path}\": #{:file.format_error(reason)}"
-        )
+        Mix.shell().error("Error: cannot read \"#{template_path}\": #{:file.format_error(reason)}")
 
         exit({:shutdown, 1})
 

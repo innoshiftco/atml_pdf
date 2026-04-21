@@ -2,8 +2,11 @@ defmodule AtmlPdf.RendererTest do
   @moduledoc false
   use ExUnit.Case, async: true
 
-  alias AtmlPdf.{Layout, Parser, Renderer}
+  alias AtmlPdf.Layout
+  alias AtmlPdf.Parser
   alias AtmlPdf.PdfBackend.Context
+  alias AtmlPdf.PdfBackend.ExGutenAdapter
+  alias AtmlPdf.Renderer
 
   # ---------------------------------------------------------------------------
   # Helpers
@@ -29,10 +32,9 @@ defmodule AtmlPdf.RendererTest do
   end
 
   # Minimal 1×1 white pixel PNG — valid for Pdf.add_image without disk fixture.
-  @tiny_png <<137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0,
-              1, 8, 2, 0, 0, 0, 144, 119, 83, 222, 0, 0, 0, 12, 73, 68, 65, 84, 8, 215, 99, 248,
-              207, 192, 0, 0, 0, 2, 0, 1, 226, 33, 188, 51, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66,
-              96, 130>>
+  @tiny_png <<137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2, 0, 0, 0, 144,
+              119, 83, 222, 0, 0, 0, 12, 73, 68, 65, 84, 8, 215, 99, 248, 207, 192, 0, 0, 0, 2, 0, 1, 226, 33, 188, 51, 0,
+              0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130>>
 
   defp tiny_png_b64, do: Base.encode64(@tiny_png)
   defp tiny_png_data_uri, do: "data:image/png;base64,#{tiny_png_b64()}"
@@ -347,7 +349,7 @@ defmodule AtmlPdf.RendererTest do
       """
 
       doc = resolve!(xml)
-      assert {:ok, ctx} = Renderer.render(doc, backend: AtmlPdf.PdfBackend.ExGutenAdapter)
+      assert {:ok, ctx} = Renderer.render(doc, backend: ExGutenAdapter)
       binary = export_and_cleanup(ctx)
 
       assert binary =~ "%PDF-"
@@ -365,7 +367,7 @@ defmodule AtmlPdf.RendererTest do
       """
 
       doc = resolve!(xml)
-      assert {:ok, ctx} = Renderer.render(doc, backend: AtmlPdf.PdfBackend.ExGutenAdapter)
+      assert {:ok, ctx} = Renderer.render(doc, backend: ExGutenAdapter)
       binary = export_and_cleanup(ctx)
 
       assert binary =~ "%PDF-"
@@ -379,7 +381,7 @@ defmodule AtmlPdf.RendererTest do
       """
 
       doc = resolve!(xml)
-      assert {:ok, ctx} = Renderer.render(doc, backend: AtmlPdf.PdfBackend.ExGutenAdapter)
+      assert {:ok, ctx} = Renderer.render(doc, backend: ExGutenAdapter)
       binary = export_and_cleanup(ctx)
 
       assert binary =~ "%PDF-"
@@ -394,8 +396,8 @@ defmodule AtmlPdf.RendererTest do
       """
 
       doc = resolve!(xml)
-      {:ok, ctx_default} = Renderer.render(doc, backend: AtmlPdf.PdfBackend.ExGutenAdapter)
-      {:ok, ctx_explicit} = Renderer.render(doc, backend: AtmlPdf.PdfBackend.ExGutenAdapter, multiple_page: true)
+      {:ok, ctx_default} = Renderer.render(doc, backend: ExGutenAdapter)
+      {:ok, ctx_explicit} = Renderer.render(doc, backend: ExGutenAdapter, multiple_page: true)
 
       pages_default = ctx_default |> export_and_cleanup() |> then(&length(Regex.scan(~r{/Type /Page[^s]}, &1)))
       pages_explicit = ctx_explicit |> export_and_cleanup() |> then(&length(Regex.scan(~r{/Type /Page[^s]}, &1)))
@@ -414,7 +416,7 @@ defmodule AtmlPdf.RendererTest do
       """
 
       doc = resolve!(xml)
-      assert {:ok, ctx} = Renderer.render(doc, backend: AtmlPdf.PdfBackend.ExGutenAdapter)
+      assert {:ok, ctx} = Renderer.render(doc, backend: ExGutenAdapter)
       binary = export_and_cleanup(ctx)
 
       page_count = length(Regex.scan(~r{/Type /Page[^s]}, binary))
@@ -434,7 +436,7 @@ defmodule AtmlPdf.RendererTest do
 
       assert {:ok, ctx} =
                Renderer.render(doc,
-                 backend: AtmlPdf.PdfBackend.ExGutenAdapter,
+                 backend: ExGutenAdapter,
                  multiple_page: false
                )
 
@@ -453,7 +455,7 @@ defmodule AtmlPdf.RendererTest do
       """
 
       doc = resolve!(xml)
-      assert {:ok, ctx} = Renderer.render(doc, backend: AtmlPdf.PdfBackend.ExGutenAdapter, multiple_page: false)
+      assert {:ok, ctx} = Renderer.render(doc, backend: ExGutenAdapter, multiple_page: false)
       binary = export_and_cleanup(ctx)
 
       page_count = length(Regex.scan(~r{/Type /Page[^s]}, binary))

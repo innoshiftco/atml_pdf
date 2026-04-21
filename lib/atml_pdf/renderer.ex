@@ -23,7 +23,11 @@ defmodule AtmlPdf.Renderer do
   - `:compress` - Enable compression (backend-specific)
   """
 
-  alias AtmlPdf.Element.{Break, Col, Document, Img, Row}
+  alias AtmlPdf.Element.Break
+  alias AtmlPdf.Element.Col
+  alias AtmlPdf.Element.Document
+  alias AtmlPdf.Element.Img
+  alias AtmlPdf.Element.Row
   alias AtmlPdf.PdfBackend.Context
 
   # ---------------------------------------------------------------------------
@@ -87,9 +91,7 @@ defmodule AtmlPdf.Renderer do
     # Set initial font through backend
     ctx =
       update_backend(ctx, fn state ->
-        backend.set_font(state, font_ctx.font_family, font_ctx.font_size,
-          bold: font_ctx.font_weight == :bold
-        )
+        backend.set_font(state, font_ctx.font_family, font_ctx.font_size, bold: font_ctx.font_weight == :bold)
       end)
 
     ctx =
@@ -120,9 +122,7 @@ defmodule AtmlPdf.Renderer do
   # Row rendering
   # ---------------------------------------------------------------------------
 
-  defp render_rows(ctx, rows, origin_x, origin_y, _parent_width, page_content_height, font_ctx,
-         opts
-       ) do
+  defp render_rows(ctx, rows, origin_x, origin_y, _parent_width, page_content_height, font_ctx, opts) do
     pad_top = Keyword.get(opts, :pad_top, 0)
     multiple_page = Keyword.get(opts, :multiple_page, true)
     page_bottom = pad_top + page_content_height
@@ -231,16 +231,7 @@ defmodule AtmlPdf.Renderer do
     )
   end
 
-  defp render_col_children(
-         ctx,
-         children,
-         inner_x,
-         inner_y,
-         inner_width,
-         inner_height,
-         col,
-         font_ctx
-       ) do
+  defp render_col_children(ctx, children, inner_x, inner_y, inner_width, inner_height, col, font_ctx) do
     # Split children into text/img segments and nested rows.
     # For text/img we apply vertical-align within inner_height.
     # For nested rows we just stack them.
@@ -251,7 +242,11 @@ defmodule AtmlPdf.Renderer do
             trimmed = String.trim(text)
 
             ctx_acc =
-              if trimmed != "" do
+              if trimmed == "" do
+                ctx_acc
+                # For center alignment, center based on the font size itself, not the
+                # line height. This accounts for the visual center of the glyphs.
+              else
                 ctx_acc =
                   update_backend(ctx_acc, fn state ->
                     ctx_acc.backend_module.set_font(
@@ -265,6 +260,7 @@ defmodule AtmlPdf.Renderer do
                 ctx_acc =
                   if col.color do
                     rgb = parse_hex_color(col.color)
+
                     update_backend(ctx_acc, fn state ->
                       ctx_acc.backend_module.set_fill_color(state, rgb)
                     end)
@@ -277,8 +273,6 @@ defmodule AtmlPdf.Renderer do
                 y_offset =
                   case col.vertical_align do
                     :top -> 0.0
-                    # For center alignment, center based on the font size itself, not the
-                    # line height. This accounts for the visual center of the glyphs.
                     :center -> max(0.0, (inner_height - font_ctx.font_size) / 2.0)
                     :bottom -> max(0.0, inner_height - text_height)
                   end
@@ -293,8 +287,6 @@ defmodule AtmlPdf.Renderer do
                   col.text_align,
                   font_ctx
                 )
-              else
-                ctx_acc
               end
 
             {ctx_acc, current_y}
@@ -358,9 +350,7 @@ defmodule AtmlPdf.Renderer do
       end
 
     update_backend(ctx, fn state ->
-      ctx.backend_module.text_wrap(state, {x, pdf_y}, {width, adjusted_height}, text,
-        align: align_opt
-      )
+      ctx.backend_module.text_wrap(state, {x, pdf_y}, {width, adjusted_height}, text, align: align_opt)
     end)
   end
 
@@ -368,16 +358,7 @@ defmodule AtmlPdf.Renderer do
   # Image rendering
   # ---------------------------------------------------------------------------
 
-  defp render_img(
-         ctx,
-         %Img{} = img,
-         x,
-         layout_y,
-         inner_width,
-         inner_height,
-         text_align,
-         vertical_align
-       ) do
+  defp render_img(ctx, %Img{} = img, x, layout_y, inner_width, inner_height, text_align, vertical_align) do
     # Skip zero-dimension images (fit with no intrinsic size info)
     if img.width <= 0.0 or img.height <= 0.0 do
       ctx

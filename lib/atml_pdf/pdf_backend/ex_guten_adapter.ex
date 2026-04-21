@@ -290,8 +290,7 @@ defmodule AtmlPdf.PdfBackend.ExGutenAdapter do
 
   @impl true
   def line(pdf, {x1, y1}, {x2, y2}) do
-    pdf
-    |> ExGuten.line(x1, y1, x2, y2)
+    ExGuten.line(pdf, x1, y1, x2, y2)
   end
 
   @impl true
@@ -455,7 +454,7 @@ defmodule AtmlPdf.PdfBackend.ExGutenAdapter do
   end
 
   defp add_image_from_file(pdf, path, {x, y}, {width, height}) do
-    ext = Path.extname(path) |> String.downcase()
+    ext = path |> Path.extname() |> String.downcase()
 
     case ext do
       ".jpg" -> ExGuten.image_jpeg(pdf, x, y, width, height, path)

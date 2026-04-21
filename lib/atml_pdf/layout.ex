@@ -35,7 +35,11 @@ defmodule AtmlPdf.Layout do
   Font fields on every `Col` node are fully resolved strings/numbers.
   """
 
-  alias AtmlPdf.Element.{Break, Col, Document, Img, Row}
+  alias AtmlPdf.Element.Break
+  alias AtmlPdf.Element.Col
+  alias AtmlPdf.Element.Document
+  alias AtmlPdf.Element.Img
+  alias AtmlPdf.Element.Row
 
   @typedoc "Resolved dimension — a plain point value."
   @type pt :: float()
@@ -284,7 +288,8 @@ defmodule AtmlPdf.Layout do
   # Computes the natural (non-fill) width of a col.
   defp resolve_col_width(%Col{width: :fit} = col, row_width, font_ctx) do
     # fit: derive from content width, clamped to min/max, bounded by row_width.
-    natural_col_width(col, font_ctx)
+    col
+    |> natural_col_width(font_ctx)
     |> clamp(col.min_width, col.max_width, row_width)
   end
 
