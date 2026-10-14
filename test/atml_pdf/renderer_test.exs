@@ -44,6 +44,22 @@ defmodule AtmlPdf.RendererTest do
   # ---------------------------------------------------------------------------
 
   describe "render/2" do
+    test "breaks a long word into separate lines in the default backend" do
+      doc =
+        resolve!("""
+        <document page-width="100pt" page-height="100pt" font-size="10pt">
+          <row height="fit"><col width="20pt">abcdefgh</col></row>
+        </document>
+        """)
+
+      assert {:ok, ctx} = Renderer.render(doc)
+      pdf = export_and_cleanup(ctx)
+
+      assert pdf =~ "(abcd) Tj"
+      assert pdf =~ "(efgh) Tj"
+      refute pdf =~ "(abcdefgh) Tj"
+    end
+
     test "returns {:ok, ctx} for a minimal document" do
       doc = resolve!(~s|<document page-width="100pt" page-height="100pt"></document>|)
       assert {:ok, ctx} = Renderer.render(doc)

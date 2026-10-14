@@ -339,8 +339,7 @@ defmodule AtmlPdf.Renderer do
     # and refuses to render if true. Since set_text_leading rounds the line_height,
     # we must ensure the box height is at least the rounded line height.
     # Otherwise text won't render and will be returned as {:continue, chunks}.
-    min_box_height = round(line_height)
-    adjusted_height = max(height, min_box_height)
+    min_box_height = max(line_height, round(line_height))
 
     align_opt =
       case text_align do
@@ -349,8 +348,19 @@ defmodule AtmlPdf.Renderer do
         :right -> :right
       end
 
-    update_backend(ctx, fn state ->
-      ctx.backend_module.text_wrap(state, {x, pdf_y}, {width, adjusted_height}, text, align: align_opt)
+    text
+    |> AtmlPdf.TextWrap.lines(width, font_ctx.font_size)
+    |> Enum.with_index()
+    |> Enum.reduce(ctx, fn {line, index}, ctx_acc ->
+      update_backend(ctx_acc, fn state ->
+        ctx_acc.backend_module.text_wrap(
+          state,
+          {x, pdf_y - index * line_height},
+          {width, max(height, min_box_height)},
+          line,
+          align: align_opt
+        )
+      end)
     end)
   end
 
@@ -462,7 +472,9 @@ defmodule AtmlPdf.Renderer do
 
     ctx
     |> update_backend(fn state -> ctx.backend_module.set_fill_color(state, rgb) end)
-    |> update_backend(fn state -> ctx.backend_module.rectangle(state, {x, pdf_y}, {width, height}) end)
+    |> update_backend(fn state ->
+      ctx.backend_module.rectangle(state, {x, pdf_y}, {width, height})
+    end)
     |> update_backend(fn state -> ctx.backend_module.fill(state) end)
     |> update_backend(fn state -> ctx.backend_module.set_fill_color(state, {0, 0, 0}) end)
   end
@@ -541,18 +553,7 @@ defmodule AtmlPdf.Renderer do
   @line_height_ratio 1.2
 
   defp estimate_text_height(text, width, font_size) do
-    avg_char_width = font_size * 0.5
-    chars_per_line = if width > 0, do: max(1, floor(width / avg_char_width)), else: 1
-
-    line_count =
-      text
-      |> String.split("\n")
-      |> Enum.map(fn line ->
-        len = String.length(String.trim(line))
-        ceil(max(len, 1) / chars_per_line)
-      end)
-      |> Enum.sum()
-
+    line_count = text |> AtmlPdf.TextWrap.lines(width, font_size) |> length()
     line_count * font_size * @line_height_ratio
   end
 end
