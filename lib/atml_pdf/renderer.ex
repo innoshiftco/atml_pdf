@@ -358,7 +358,9 @@ defmodule AtmlPdf.Renderer do
           {x, pdf_y - index * line_height},
           {width, max(height, min_box_height)},
           line,
-          align: align_opt
+          align: align_opt,
+          prewrapped: true,
+          font_size: font_ctx.font_size
         )
       end)
     end)

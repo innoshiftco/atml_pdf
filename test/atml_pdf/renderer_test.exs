@@ -60,6 +60,19 @@ defmodule AtmlPdf.RendererTest do
       refute pdf =~ "(abcdefgh) Tj"
     end
 
+    test "prewrapped lines are not wrapped a second time by the default backend" do
+      doc =
+        resolve!("""
+        <document page-width="100pt" page-height="100pt" font-size="10pt">
+          <row height="fit"><col width="20pt">WWWW</col></row>
+        </document>
+        """)
+
+      assert {:ok, ctx} = Renderer.render(doc)
+      pdf = export_and_cleanup(ctx)
+      assert pdf =~ "(WWWW) Tj"
+    end
+
     test "returns {:ok, ctx} for a minimal document" do
       doc = resolve!(~s|<document page-width="100pt" page-height="100pt"></document>|)
       assert {:ok, ctx} = Renderer.render(doc)
@@ -415,8 +428,11 @@ defmodule AtmlPdf.RendererTest do
       {:ok, ctx_default} = Renderer.render(doc, backend: ExGutenAdapter)
       {:ok, ctx_explicit} = Renderer.render(doc, backend: ExGutenAdapter, multiple_page: true)
 
-      pages_default = ctx_default |> export_and_cleanup() |> then(&length(Regex.scan(~r{/Type /Page[^s]}, &1)))
-      pages_explicit = ctx_explicit |> export_and_cleanup() |> then(&length(Regex.scan(~r{/Type /Page[^s]}, &1)))
+      pages_default =
+        ctx_default |> export_and_cleanup() |> then(&length(Regex.scan(~r{/Type /Page[^s]}, &1)))
+
+      pages_explicit =
+        ctx_explicit |> export_and_cleanup() |> then(&length(Regex.scan(~r{/Type /Page[^s]}, &1)))
 
       assert pages_default == pages_explicit
       assert pages_default >= 2

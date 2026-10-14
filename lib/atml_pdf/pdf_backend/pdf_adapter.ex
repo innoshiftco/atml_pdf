@@ -32,6 +32,7 @@ defmodule AtmlPdf.PdfBackend.PdfAdapter do
   @impl true
   def set_font(pid, family, size, opts) do
     bold = Keyword.get(opts, :bold, false)
+    family = if family == "Times-Roman", do: "Times", else: family
     Pdf.set_font(pid, family, round(size), bold: bold)
     pid
   end
@@ -39,7 +40,23 @@ defmodule AtmlPdf.PdfBackend.PdfAdapter do
   @impl true
   def text_wrap(pid, {x, y}, {width, height}, text, opts) do
     align = Keyword.get(opts, :align, :left)
-    Pdf.text_wrap(pid, {x, y}, {width, height}, text, align: align)
+
+    if Keyword.get(opts, :prewrapped, false) do
+      font_size = Keyword.fetch!(opts, :font_size)
+      estimated_width = String.length(text) * font_size * 0.5
+
+      text_x =
+        case align do
+          :center -> x + (width - estimated_width) / 2
+          :right -> x + width - estimated_width
+          _ -> x
+        end
+
+      Pdf.text_at(pid, {text_x, y - font_size * 0.8}, text)
+    else
+      Pdf.text_wrap(pid, {x, y}, {width, height}, text, align: align)
+    end
+
     pid
   end
 

@@ -72,7 +72,8 @@ defmodule AtmlPdf.PdfBackend do
   - `position` - `{x, y}` tuple for bottom-left corner
   - `dimensions` - `{width, height}` tuple for bounding box
   - `text` - The text content to render
-  - `opts` - Text options (e.g., `align: :left`)
+  - `opts` - Text options (e.g., `align: :left`). The renderer passes
+    `prewrapped: true` and `font_size` for a single line that must not wrap again.
 
   ## Returns
   Updated backend state
@@ -151,7 +152,11 @@ defmodule AtmlPdf.PdfBackend do
   ## Returns
   Updated backend state
   """
-  @callback rectangle(state :: term(), position :: {float(), float()}, dimensions :: {float(), float()}) :: term()
+  @callback rectangle(
+              state :: term(),
+              position :: {float(), float()},
+              dimensions :: {float(), float()}
+            ) :: term()
 
   @doc """
   Fills the current path with the current fill color.

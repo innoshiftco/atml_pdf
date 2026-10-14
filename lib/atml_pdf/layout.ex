@@ -82,6 +82,8 @@ defmodule AtmlPdf.Layout do
   """
   @spec resolve(Document.t()) :: {:ok, Document.t()} | {:error, String.t()}
   def resolve(%Document{} = doc) do
+    validate_font_size!(doc.font_size)
+
     font_ctx = %{
       font_family: doc.font_family,
       font_size: doc.font_size,
@@ -463,12 +465,18 @@ defmodule AtmlPdf.Layout do
   # Merges the inherited font context with any overrides declared on a Col.
   # Rows do not carry font fields, so they pass the context through unchanged.
   defp merge_font_ctx(ctx, %Col{} = col) do
+    font_size = col.font_size || ctx.font_size
+    validate_font_size!(font_size)
+
     %{
       font_family: col.font_family || ctx.font_family,
-      font_size: col.font_size || ctx.font_size,
+      font_size: font_size,
       font_weight: col.font_weight || ctx.font_weight
     }
   end
+
+  defp validate_font_size!(size) when is_number(size) and size > 0, do: :ok
+  defp validate_font_size!(_size), do: raise(ArgumentError, "font size must be greater than zero")
 
   # ---------------------------------------------------------------------------
   # Dimension utilities

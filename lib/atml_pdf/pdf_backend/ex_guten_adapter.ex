@@ -173,7 +173,12 @@ defmodule AtmlPdf.PdfBackend.ExGutenAdapter do
     line_height = font_size * 1.2
 
     # Wrap text into lines that fit within the width
-    lines = AtmlPdf.TextWrap.lines(text, width, font_size)
+    lines =
+      if Keyword.get(opts, :prewrapped, false) do
+        [text]
+      else
+        AtmlPdf.TextWrap.lines(text, width, font_size)
+      end
 
     # All embedded (TTF) fonts act as fallbacks for glyph coverage.
     # This ensures config-registered fonts (e.g. NotoSansThai, NotoSansCJK)

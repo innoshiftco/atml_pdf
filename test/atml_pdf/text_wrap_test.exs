@@ -19,7 +19,16 @@ defmodule AtmlPdf.TextWrapTest do
     end
 
     test "wraps words before splitting them" do
-      assert TextWrap.lines("one two three", 35, 10) == ["one two", "three"]
+      assert TextWrap.lines("one two three", 35, 10) == ["one two", " three"]
+    end
+
+    test "retains repeated spaces and tabs" do
+      text = "one  two\t\tthree"
+      assert text |> TextWrap.lines(35, 10) |> Enum.join() == text
+    end
+
+    test "accepts zero-size fonts without width wrapping" do
+      assert TextWrap.lines("one two\nthree", 0, 0) == ["one two", "three"]
     end
   end
 end
