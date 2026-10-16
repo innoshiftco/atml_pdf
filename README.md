@@ -41,6 +41,10 @@ mix atml_pdf.render label.xml
 
 # Explicit output path
 mix atml_pdf.render label.xml /tmp/label.pdf
+
+# Choose a backend (PdfAdapter is the default)
+mix atml_pdf.render label.xml /tmp/label.pdf --backend ExGutenAdapter
+mix atml_pdf.render label.xml /tmp/label.pdf --backend PdfAdapter
 ```
 
 ### Render to a file
