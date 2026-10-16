@@ -355,11 +355,8 @@ defmodule AtmlPdf.Renderer do
         ctx.backend_module.set_text_leading(state, line_height)
       end)
 
-    # CRITICAL FIX: The pdf library's text_wrap checks if line_height > box_height
-    # and refuses to render if true. Since set_text_leading rounds the line_height,
-    # we must ensure the box height is at least the rounded line height.
-    # Otherwise text won't render and will be returned as {:continue, chunks}.
-    min_box_height = max(line_height, round(line_height))
+    # Pdf.text_wrap needs a box at least as tall as its rounded text leading.
+    min_box_height = ceil(line_height)
 
     align_opt =
       case text_align do
