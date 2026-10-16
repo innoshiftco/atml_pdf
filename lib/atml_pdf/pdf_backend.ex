@@ -151,7 +151,11 @@ defmodule AtmlPdf.PdfBackend do
   ## Returns
   Updated backend state
   """
-  @callback rectangle(state :: term(), position :: {float(), float()}, dimensions :: {float(), float()}) :: term()
+  @callback rectangle(
+              state :: term(),
+              position :: {float(), float()},
+              dimensions :: {float(), float()}
+            ) :: term()
 
   @doc """
   Fills the current path with the current fill color.

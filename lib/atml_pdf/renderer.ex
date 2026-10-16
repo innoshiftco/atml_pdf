@@ -91,7 +91,9 @@ defmodule AtmlPdf.Renderer do
     # Set initial font through backend
     ctx =
       update_backend(ctx, fn state ->
-        backend.set_font(state, font_ctx.font_family, font_ctx.font_size, bold: font_ctx.font_weight == :bold)
+        backend.set_font(state, font_ctx.font_family, font_ctx.font_size,
+          bold: font_ctx.font_weight == :bold
+        )
       end)
 
     ctx =
@@ -122,7 +124,16 @@ defmodule AtmlPdf.Renderer do
   # Row rendering
   # ---------------------------------------------------------------------------
 
-  defp render_rows(ctx, rows, origin_x, origin_y, _parent_width, page_content_height, font_ctx, opts) do
+  defp render_rows(
+         ctx,
+         rows,
+         origin_x,
+         origin_y,
+         _parent_width,
+         page_content_height,
+         font_ctx,
+         opts
+       ) do
     pad_top = Keyword.get(opts, :pad_top, 0)
     multiple_page = Keyword.get(opts, :multiple_page, true)
     page_bottom = pad_top + page_content_height
@@ -231,7 +242,16 @@ defmodule AtmlPdf.Renderer do
     )
   end
 
-  defp render_col_children(ctx, children, inner_x, inner_y, inner_width, inner_height, col, font_ctx) do
+  defp render_col_children(
+         ctx,
+         children,
+         inner_x,
+         inner_y,
+         inner_width,
+         inner_height,
+         col,
+         font_ctx
+       ) do
     # Split children into text/img segments and nested rows.
     # For text/img we apply vertical-align within inner_height.
     # For nested rows we just stack them.
@@ -268,7 +288,7 @@ defmodule AtmlPdf.Renderer do
                     ctx_acc
                   end
 
-                text_height = estimate_text_height(trimmed, inner_width, font_ctx.font_size)
+                text_height = estimate_text_height(trimmed, inner_width, font_ctx)
 
                 y_offset =
                   case col.vertical_align do
@@ -335,12 +355,8 @@ defmodule AtmlPdf.Renderer do
         ctx.backend_module.set_text_leading(state, line_height)
       end)
 
-    # CRITICAL FIX: The pdf library's text_wrap checks if line_height > box_height
-    # and refuses to render if true. Since set_text_leading rounds the line_height,
-    # we must ensure the box height is at least the rounded line height.
-    # Otherwise text won't render and will be returned as {:continue, chunks}.
-    min_box_height = round(line_height)
-    adjusted_height = max(height, min_box_height)
+    # Pdf.text_wrap needs a box at least as tall as its rounded text leading.
+    min_box_height = ceil(line_height)
 
     align_opt =
       case text_align do
@@ -350,7 +366,13 @@ defmodule AtmlPdf.Renderer do
       end
 
     update_backend(ctx, fn state ->
-      ctx.backend_module.text_wrap(state, {x, pdf_y}, {width, adjusted_height}, text, align: align_opt)
+      ctx.backend_module.text_wrap(
+        state,
+        {x, pdf_y},
+        {width, max(height, min_box_height)},
+        text,
+        align: align_opt
+      )
     end)
   end
 
@@ -358,7 +380,16 @@ defmodule AtmlPdf.Renderer do
   # Image rendering
   # ---------------------------------------------------------------------------
 
-  defp render_img(ctx, %Img{} = img, x, layout_y, inner_width, inner_height, text_align, vertical_align) do
+  defp render_img(
+         ctx,
+         %Img{} = img,
+         x,
+         layout_y,
+         inner_width,
+         inner_height,
+         text_align,
+         vertical_align
+       ) do
     # Skip zero-dimension images (fit with no intrinsic size info)
     if img.width <= 0.0 or img.height <= 0.0 do
       ctx
@@ -462,7 +493,9 @@ defmodule AtmlPdf.Renderer do
 
     ctx
     |> update_backend(fn state -> ctx.backend_module.set_fill_color(state, rgb) end)
-    |> update_backend(fn state -> ctx.backend_module.rectangle(state, {x, pdf_y}, {width, height}) end)
+    |> update_backend(fn state ->
+      ctx.backend_module.rectangle(state, {x, pdf_y}, {width, height})
+    end)
     |> update_backend(fn state -> ctx.backend_module.fill(state) end)
     |> update_backend(fn state -> ctx.backend_module.set_fill_color(state, {0, 0, 0}) end)
   end
@@ -536,23 +569,13 @@ defmodule AtmlPdf.Renderer do
   defp normalise_padding(n) when is_number(n), do: {n, n, n, n}
   defp normalise_padding(_), do: {0, 0, 0, 0}
 
-  # Rough estimate of text height given content, available width, and font size.
-  # Mirrors the heuristic used in AtmlPdf.Layout.
+  # Measure height with the same line breaks used by Layout and ExGuten.
   @line_height_ratio 1.2
 
-  defp estimate_text_height(text, width, font_size) do
-    avg_char_width = font_size * 0.5
-    chars_per_line = if width > 0, do: max(1, floor(width / avg_char_width)), else: 1
-
-    line_count =
-      text
-      |> String.split("\n")
-      |> Enum.map(fn line ->
-        len = String.length(String.trim(line))
-        ceil(max(len, 1) / chars_per_line)
-      end)
-      |> Enum.sum()
-
-    line_count * font_size * @line_height_ratio
+  defp estimate_text_height(text, width, font_ctx) do
+    font_name = AtmlPdf.TextWrap.metric_font_name(font_ctx.font_family, font_ctx.font_weight)
+    measure = &AtmlPdf.TextWrap.width(font_name, font_ctx.font_size, &1)
+    line_count = text |> AtmlPdf.TextWrap.lines(width, font_ctx.font_size, measure) |> length()
+    line_count * font_ctx.font_size * @line_height_ratio
   end
 end

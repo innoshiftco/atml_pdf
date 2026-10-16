@@ -32,9 +32,10 @@ defmodule AtmlPdf.RendererTest do
   end
 
   # Minimal 1×1 white pixel PNG — valid for Pdf.add_image without disk fixture.
-  @tiny_png <<137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2, 0, 0, 0, 144,
-              119, 83, 222, 0, 0, 0, 12, 73, 68, 65, 84, 8, 215, 99, 248, 207, 192, 0, 0, 0, 2, 0, 1, 226, 33, 188, 51, 0,
-              0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130>>
+  @tiny_png <<137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0,
+              1, 8, 2, 0, 0, 0, 144, 119, 83, 222, 0, 0, 0, 12, 73, 68, 65, 84, 8, 215, 99, 248,
+              207, 192, 0, 0, 0, 2, 0, 1, 226, 33, 188, 51, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66,
+              96, 130>>
 
   defp tiny_png_b64, do: Base.encode64(@tiny_png)
   defp tiny_png_data_uri, do: "data:image/png;base64,#{tiny_png_b64()}"
@@ -44,6 +45,32 @@ defmodule AtmlPdf.RendererTest do
   # ---------------------------------------------------------------------------
 
   describe "render/2" do
+    test "ExGuten keeps centered long text inside its column" do
+      tracking = String.duplicate("XDE001235", 11)
+
+      doc =
+        resolve!("""
+        <document page-width="200pt" page-height="100pt" font-size="10pt">
+          <row height="fit"><col width="153.2pt" font-weight="bold" text-align="center">#{tracking}</col></row>
+        </document>
+        """)
+
+      assert {:ok, ctx} = Renderer.render(doc, backend: ExGutenAdapter)
+
+      lines =
+        for {:text_at, x, _y, line, {font, size}} <- ctx.backend_state.pages[1] do
+          measured_width = ExGuten.Font.text_width(font, size, line)
+          assert x >= 0.0
+          assert x + measured_width <= 153.201
+          line
+        end
+
+      assert length(lines) == 4
+      assert Enum.join(lines) == tracking
+      assert hd(doc.children).height == length(lines) * 12.0
+      cleanup(ctx)
+    end
+
     test "returns {:ok, ctx} for a minimal document" do
       doc = resolve!(~s|<document page-width="100pt" page-height="100pt"></document>|)
       assert {:ok, ctx} = Renderer.render(doc)
@@ -399,8 +426,11 @@ defmodule AtmlPdf.RendererTest do
       {:ok, ctx_default} = Renderer.render(doc, backend: ExGutenAdapter)
       {:ok, ctx_explicit} = Renderer.render(doc, backend: ExGutenAdapter, multiple_page: true)
 
-      pages_default = ctx_default |> export_and_cleanup() |> then(&length(Regex.scan(~r{/Type /Page[^s]}, &1)))
-      pages_explicit = ctx_explicit |> export_and_cleanup() |> then(&length(Regex.scan(~r{/Type /Page[^s]}, &1)))
+      pages_default =
+        ctx_default |> export_and_cleanup() |> then(&length(Regex.scan(~r{/Type /Page[^s]}, &1)))
+
+      pages_explicit =
+        ctx_explicit |> export_and_cleanup() |> then(&length(Regex.scan(~r{/Type /Page[^s]}, &1)))
 
       assert pages_default == pages_explicit
       assert pages_default >= 2

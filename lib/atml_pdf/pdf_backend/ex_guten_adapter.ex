@@ -171,9 +171,11 @@ defmodule AtmlPdf.PdfBackend.ExGutenAdapter do
     # Calculate baseline offset and line height
     baseline_offset = font_size * 0.8
     line_height = font_size * 1.2
+    font_name = primary_font_name(pdf)
+    measure = &AtmlPdf.TextWrap.width(font_name, font_size, &1)
 
     # Wrap text into lines that fit within the width
-    lines = wrap_text(text, width, font_size)
+    lines = AtmlPdf.TextWrap.lines(text, width, font_size, measure)
 
     # All embedded (TTF) fonts act as fallbacks for glyph coverage.
     # This ensures config-registered fonts (e.g. NotoSansThai, NotoSansCJK)
@@ -191,8 +193,7 @@ defmodule AtmlPdf.PdfBackend.ExGutenAdapter do
       line_y = y - baseline_offset - index * line_height
 
       # Calculate x position based on alignment
-      estimated_char_width = font_size * 0.5
-      estimated_text_width = String.length(line) * estimated_char_width
+      text_width = measure.(line)
 
       text_x =
         case align do
@@ -201,10 +202,10 @@ defmodule AtmlPdf.PdfBackend.ExGutenAdapter do
 
           :center ->
             box_center = x + width / 2
-            box_center - estimated_text_width / 2
+            box_center - text_width / 2
 
           :right ->
-            x + width - estimated_text_width
+            x + width - text_width
 
           _ ->
             x
@@ -336,70 +337,6 @@ defmodule AtmlPdf.PdfBackend.ExGutenAdapter do
   end
 
   # Private helper functions
-
-  defp wrap_text(text, max_width, font_size) do
-    # Estimate character width (average for proportional fonts)
-    char_width = font_size * 0.5
-
-    # Calculate approximate max characters per line
-    max_chars = trunc(max_width / char_width)
-
-    # If text fits in one line, return as-is
-    if String.length(text) <= max_chars do
-      [text]
-    else
-      # Word-wrap algorithm
-      words = String.split(text, " ")
-      wrap_words(words, max_chars, [], [])
-    end
-  end
-
-  defp wrap_words([], _max_chars, current_line, lines) do
-    # Finish last line
-    if current_line == [] do
-      Enum.reverse(lines)
-    else
-      Enum.reverse([Enum.join(Enum.reverse(current_line), " ") | lines])
-    end
-  end
-
-  defp wrap_words([word | rest], max_chars, current_line, lines) do
-    # Calculate current line length
-    current_length =
-      if current_line == [] do
-        0
-      else
-        current_line
-        |> Enum.reverse()
-        |> Enum.join(" ")
-        |> String.length()
-      end
-
-    # Calculate length if we add this word
-    word_length = String.length(word)
-    space_length = if current_line == [], do: 0, else: 1
-    new_length = current_length + space_length + word_length
-
-    cond do
-      # Word fits on current line
-      new_length <= max_chars ->
-        wrap_words(rest, max_chars, [word | current_line], lines)
-
-      # Word doesn't fit, start new line
-      current_line != [] ->
-        line = Enum.join(Enum.reverse(current_line), " ")
-        wrap_words([word | rest], max_chars, [], [line | lines])
-
-      # Word is too long for any line, split it
-      word_length > max_chars ->
-        {first_part, rest_part} = String.split_at(word, max_chars)
-        wrap_words([rest_part | rest], max_chars, [], [first_part | lines])
-
-      # Start new line with this word
-      true ->
-        wrap_words(rest, max_chars, [word], lines)
-    end
-  end
 
   # Resolve an ATML font-family name to a font name that ExGuten knows about.
   #
