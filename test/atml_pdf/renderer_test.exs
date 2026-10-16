@@ -32,9 +32,10 @@ defmodule AtmlPdf.RendererTest do
   end
 
   # Minimal 1×1 white pixel PNG — valid for Pdf.add_image without disk fixture.
-  @tiny_png <<137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2, 0, 0, 0, 144,
-              119, 83, 222, 0, 0, 0, 12, 73, 68, 65, 84, 8, 215, 99, 248, 207, 192, 0, 0, 0, 2, 0, 1, 226, 33, 188, 51, 0,
-              0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130>>
+  @tiny_png <<137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0,
+              1, 8, 2, 0, 0, 0, 144, 119, 83, 222, 0, 0, 0, 12, 73, 68, 65, 84, 8, 215, 99, 248,
+              207, 192, 0, 0, 0, 2, 0, 1, 226, 33, 188, 51, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66,
+              96, 130>>
 
   defp tiny_png_b64, do: Base.encode64(@tiny_png)
   defp tiny_png_data_uri, do: "data:image/png;base64,#{tiny_png_b64()}"
@@ -44,35 +45,6 @@ defmodule AtmlPdf.RendererTest do
   # ---------------------------------------------------------------------------
 
   describe "render/2" do
-    test "breaks a long word into separate lines in the default backend" do
-      doc =
-        resolve!("""
-        <document page-width="100pt" page-height="100pt" font-size="10pt">
-          <row height="fit"><col width="20pt">abcdefgh</col></row>
-        </document>
-        """)
-
-      assert {:ok, ctx} = Renderer.render(doc)
-      pdf = export_and_cleanup(ctx)
-
-      assert pdf =~ "(abcd) Tj"
-      assert pdf =~ "(efgh) Tj"
-      refute pdf =~ "(abcdefgh) Tj"
-    end
-
-    test "prewrapped lines are not wrapped a second time by the default backend" do
-      doc =
-        resolve!("""
-        <document page-width="100pt" page-height="100pt" font-size="10pt">
-          <row height="fit"><col width="20pt">WWWW</col></row>
-        </document>
-        """)
-
-      assert {:ok, ctx} = Renderer.render(doc)
-      pdf = export_and_cleanup(ctx)
-      assert pdf =~ "(WWWW) Tj"
-    end
-
     test "returns {:ok, ctx} for a minimal document" do
       doc = resolve!(~s|<document page-width="100pt" page-height="100pt"></document>|)
       assert {:ok, ctx} = Renderer.render(doc)

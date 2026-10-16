@@ -72,8 +72,7 @@ defmodule AtmlPdf.PdfBackend do
   - `position` - `{x, y}` tuple for bottom-left corner
   - `dimensions` - `{width, height}` tuple for bounding box
   - `text` - The text content to render
-  - `opts` - Text options (e.g., `align: :left`). The renderer passes
-    `prewrapped: true` and `font_size` for a single line that must not wrap again.
+  - `opts` - Text options (e.g., `align: :left`)
 
   ## Returns
   Updated backend state

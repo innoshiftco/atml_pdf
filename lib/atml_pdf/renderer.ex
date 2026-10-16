@@ -91,7 +91,9 @@ defmodule AtmlPdf.Renderer do
     # Set initial font through backend
     ctx =
       update_backend(ctx, fn state ->
-        backend.set_font(state, font_ctx.font_family, font_ctx.font_size, bold: font_ctx.font_weight == :bold)
+        backend.set_font(state, font_ctx.font_family, font_ctx.font_size,
+          bold: font_ctx.font_weight == :bold
+        )
       end)
 
     ctx =
@@ -122,7 +124,16 @@ defmodule AtmlPdf.Renderer do
   # Row rendering
   # ---------------------------------------------------------------------------
 
-  defp render_rows(ctx, rows, origin_x, origin_y, _parent_width, page_content_height, font_ctx, opts) do
+  defp render_rows(
+         ctx,
+         rows,
+         origin_x,
+         origin_y,
+         _parent_width,
+         page_content_height,
+         font_ctx,
+         opts
+       ) do
     pad_top = Keyword.get(opts, :pad_top, 0)
     multiple_page = Keyword.get(opts, :multiple_page, true)
     page_bottom = pad_top + page_content_height
@@ -231,7 +242,16 @@ defmodule AtmlPdf.Renderer do
     )
   end
 
-  defp render_col_children(ctx, children, inner_x, inner_y, inner_width, inner_height, col, font_ctx) do
+  defp render_col_children(
+         ctx,
+         children,
+         inner_x,
+         inner_y,
+         inner_width,
+         inner_height,
+         col,
+         font_ctx
+       ) do
     # Split children into text/img segments and nested rows.
     # For text/img we apply vertical-align within inner_height.
     # For nested rows we just stack them.
@@ -348,21 +368,14 @@ defmodule AtmlPdf.Renderer do
         :right -> :right
       end
 
-    text
-    |> AtmlPdf.TextWrap.lines(width, font_ctx.font_size)
-    |> Enum.with_index()
-    |> Enum.reduce(ctx, fn {line, index}, ctx_acc ->
-      update_backend(ctx_acc, fn state ->
-        ctx_acc.backend_module.text_wrap(
-          state,
-          {x, pdf_y - index * line_height},
-          {width, max(height, min_box_height)},
-          line,
-          align: align_opt,
-          prewrapped: true,
-          font_size: font_ctx.font_size
-        )
-      end)
+    update_backend(ctx, fn state ->
+      ctx.backend_module.text_wrap(
+        state,
+        {x, pdf_y},
+        {width, max(height, min_box_height)},
+        text,
+        align: align_opt
+      )
     end)
   end
 
@@ -370,7 +383,16 @@ defmodule AtmlPdf.Renderer do
   # Image rendering
   # ---------------------------------------------------------------------------
 
-  defp render_img(ctx, %Img{} = img, x, layout_y, inner_width, inner_height, text_align, vertical_align) do
+  defp render_img(
+         ctx,
+         %Img{} = img,
+         x,
+         layout_y,
+         inner_width,
+         inner_height,
+         text_align,
+         vertical_align
+       ) do
     # Skip zero-dimension images (fit with no intrinsic size info)
     if img.width <= 0.0 or img.height <= 0.0 do
       ctx
