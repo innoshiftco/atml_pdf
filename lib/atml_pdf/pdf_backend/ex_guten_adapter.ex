@@ -171,9 +171,11 @@ defmodule AtmlPdf.PdfBackend.ExGutenAdapter do
     # Calculate baseline offset and line height
     baseline_offset = font_size * 0.8
     line_height = font_size * 1.2
+    font_name = primary_font_name(pdf)
+    measure = &AtmlPdf.TextWrap.width(font_name, font_size, &1)
 
     # Wrap text into lines that fit within the width
-    lines = AtmlPdf.TextWrap.lines(text, width, font_size)
+    lines = AtmlPdf.TextWrap.lines(text, width, font_size, measure)
 
     # All embedded (TTF) fonts act as fallbacks for glyph coverage.
     # This ensures config-registered fonts (e.g. NotoSansThai, NotoSansCJK)
@@ -191,8 +193,7 @@ defmodule AtmlPdf.PdfBackend.ExGutenAdapter do
       line_y = y - baseline_offset - index * line_height
 
       # Calculate x position based on alignment
-      estimated_char_width = font_size * 0.5
-      estimated_text_width = String.length(line) * estimated_char_width
+      text_width = measure.(line)
 
       text_x =
         case align do
@@ -201,10 +202,10 @@ defmodule AtmlPdf.PdfBackend.ExGutenAdapter do
 
           :center ->
             box_center = x + width / 2
-            box_center - estimated_text_width / 2
+            box_center - text_width / 2
 
           :right ->
-            x + width - estimated_text_width
+            x + width - text_width
 
           _ ->
             x

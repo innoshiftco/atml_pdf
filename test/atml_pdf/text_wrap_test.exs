@@ -31,4 +31,16 @@ defmodule AtmlPdf.TextWrapTest do
       assert TextWrap.lines("one two\nthree", 0, 0) == ["one two", "three"]
     end
   end
+
+  describe "lines/4" do
+    test "measured Helvetica lines fit the available width" do
+      text = String.duplicate("A", 29) <> " " <> String.duplicate("A", 24) <> " " <> String.duplicate("A", 45)
+      measure = &TextWrap.width("Helvetica", 9, &1)
+      lines = TextWrap.lines(text, 360, 9, measure)
+
+      assert length(lines) == 2
+      assert Enum.join(lines) == text
+      assert Enum.all?(lines, &(measure.(&1) <= 360))
+    end
+  end
 end

@@ -224,6 +224,11 @@ defmodule AtmlPdf.Layout do
   defp col_content_height(%Col{} = col, parent_width, font_ctx) do
     resolved_font_ctx = merge_font_ctx(font_ctx, col)
     fs = resolved_font_ctx.font_size
+
+    font_name =
+      TextWrap.metric_font_name(resolved_font_ctx.font_family, resolved_font_ctx.font_weight)
+
+    measure = &TextWrap.width(font_name, fs, &1)
     line_h = fs * @line_height_ratio
 
     padding_v = col.padding_top + col.padding_bottom
@@ -233,7 +238,9 @@ defmodule AtmlPdf.Layout do
       col.children
       |> Enum.map(fn
         text when is_binary(text) ->
-          line_count = text |> String.trim() |> TextWrap.lines(inner_width, fs) |> length()
+          line_count =
+            text |> String.trim() |> TextWrap.lines(inner_width, fs, measure) |> length()
+
           line_count * line_h
 
         %Row{} = nested_row ->
@@ -325,13 +332,11 @@ defmodule AtmlPdf.Layout do
   end
 
   # Estimates the natural content width of a col for :fit calculations.
-  # Mirrors the heuristic used in col_content_height/3 for the width axis.
+  # Measures the widest content line for fit-width columns.
   defp natural_col_width(%Col{} = col, font_ctx) do
     resolved_font_ctx = merge_font_ctx(font_ctx, col)
     fs = resolved_font_ctx.font_size
-    # Use 0.6 instead of 0.5 to account for character width variation
-    # and prevent clipping on right-aligned text with wider characters
-    avg_char_width = fs * 0.6
+    font_name = TextWrap.metric_font_name(resolved_font_ctx.font_family, resolved_font_ctx.font_weight)
 
     padding_h = col.padding_left + col.padding_right
 
@@ -341,9 +346,8 @@ defmodule AtmlPdf.Layout do
         text when is_binary(text) ->
           text
           |> String.split("\n")
-          |> Enum.map(fn line -> String.length(String.trim(line)) end)
-          |> Enum.max(fn -> 0 end)
-          |> Kernel.*(avg_char_width)
+          |> Enum.map(fn line -> TextWrap.width(font_name, fs, String.trim(line)) end)
+          |> Enum.max(fn -> 0.0 end)
 
         %Row{} = nested_row ->
           # A nested row's natural width is the sum of its cols' natural widths.

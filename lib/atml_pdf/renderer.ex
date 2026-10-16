@@ -288,7 +288,7 @@ defmodule AtmlPdf.Renderer do
                     ctx_acc
                   end
 
-                text_height = estimate_text_height(trimmed, inner_width, font_ctx.font_size)
+                text_height = estimate_text_height(trimmed, inner_width, font_ctx)
 
                 y_offset =
                   case col.vertical_align do
@@ -569,12 +569,13 @@ defmodule AtmlPdf.Renderer do
   defp normalise_padding(n) when is_number(n), do: {n, n, n, n}
   defp normalise_padding(_), do: {0, 0, 0, 0}
 
-  # Rough estimate of text height given content, available width, and font size.
-  # Mirrors the heuristic used in AtmlPdf.Layout.
+  # Measure height with the same line breaks used by Layout and ExGuten.
   @line_height_ratio 1.2
 
-  defp estimate_text_height(text, width, font_size) do
-    line_count = text |> AtmlPdf.TextWrap.lines(width, font_size) |> length()
-    line_count * font_size * @line_height_ratio
+  defp estimate_text_height(text, width, font_ctx) do
+    font_name = AtmlPdf.TextWrap.metric_font_name(font_ctx.font_family, font_ctx.font_weight)
+    measure = &AtmlPdf.TextWrap.width(font_name, font_ctx.font_size, &1)
+    line_count = text |> AtmlPdf.TextWrap.lines(width, font_ctx.font_size, measure) |> length()
+    line_count * font_ctx.font_size * @line_height_ratio
   end
 end

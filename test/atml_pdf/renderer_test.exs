@@ -45,6 +45,32 @@ defmodule AtmlPdf.RendererTest do
   # ---------------------------------------------------------------------------
 
   describe "render/2" do
+    test "ExGuten keeps centered long text inside its column" do
+      tracking = String.duplicate("XDE001235", 11)
+
+      doc =
+        resolve!("""
+        <document page-width="200pt" page-height="100pt" font-size="10pt">
+          <row height="fit"><col width="153.2pt" font-weight="bold" text-align="center">#{tracking}</col></row>
+        </document>
+        """)
+
+      assert {:ok, ctx} = Renderer.render(doc, backend: ExGutenAdapter)
+
+      lines =
+        for {:text_at, x, _y, line, {font, size}} <- ctx.backend_state.pages[1] do
+          measured_width = ExGuten.Font.text_width(font, size, line)
+          assert x >= 0.0
+          assert x + measured_width <= 153.201
+          line
+        end
+
+      assert length(lines) == 4
+      assert Enum.join(lines) == tracking
+      assert hd(doc.children).height == length(lines) * 12.0
+      cleanup(ctx)
+    end
+
     test "returns {:ok, ctx} for a minimal document" do
       doc = resolve!(~s|<document page-width="100pt" page-height="100pt"></document>|)
       assert {:ok, ctx} = Renderer.render(doc)

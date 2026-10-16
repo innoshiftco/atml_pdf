@@ -41,7 +41,8 @@ defmodule AtmlPdf.LayoutTest do
       {:ok, parsed} =
         Parser.parse(~s|<document page-width="100pt" page-height="100pt" font-size="0pt" />|)
 
-      assert {:error, "Layout error: font size must be greater than zero"} = Layout.resolve(parsed)
+      assert {:error, "Layout error: font size must be greater than zero"} =
+               Layout.resolve(parsed)
     end
 
     test "rejects a non-positive column font size" do
@@ -50,7 +51,8 @@ defmodule AtmlPdf.LayoutTest do
           ~s|<document page-width="100pt" page-height="100pt"><row><col font-size="0pt">text</col></row></document>|
         )
 
-      assert {:error, "Layout error: font size must be greater than zero"} = Layout.resolve(parsed)
+      assert {:error, "Layout error: font size must be greater than zero"} =
+               Layout.resolve(parsed)
     end
 
     test "document font defaults propagate to col when col sets nothing" do
@@ -363,7 +365,7 @@ defmodule AtmlPdf.LayoutTest do
         """)
 
       [row] = doc.children
-      assert row.height == 24.0
+      assert row.height == 36.0
       assert Enum.map(row.children, & &1.width) == [20.0, 80.0]
     end
 
@@ -378,7 +380,7 @@ defmodule AtmlPdf.LayoutTest do
         """)
 
       [row] = doc.children
-      assert row.height == 50.0
+      assert row.height == 62.0
     end
 
     test "fit row measures the clamped width of a fill column" do
@@ -392,7 +394,7 @@ defmodule AtmlPdf.LayoutTest do
         """)
 
       [row] = doc.children
-      assert row.height == 24.0
+      assert row.height == 36.0
       assert hd(row.children).width == 20.0
     end
 
@@ -407,7 +409,7 @@ defmodule AtmlPdf.LayoutTest do
         """)
 
       [row] = doc.children
-      assert row.height == 24.0
+      assert row.height == 36.0
       assert hd(row.children).width == 20.0
     end
 
@@ -744,6 +746,19 @@ defmodule AtmlPdf.LayoutTest do
   # ---------------------------------------------------------------------------
 
   describe "resolve/1 – fit col width" do
+    test "fit col width uses the selected font metrics" do
+      doc =
+        resolve!("""
+        <document page-width="200pt" page-height="100pt" font-size="10pt">
+          <row height="40pt"><col width="fit" font-weight="bold">WWWW</col></row>
+        </document>
+        """)
+
+      [row] = doc.children
+      [col] = row.children
+      assert col.width == ExGuten.Font.text_width("Helvetica-Bold", 10, "WWWW")
+    end
+
     test "fit col width is non-negative" do
       doc =
         resolve!("""
