@@ -40,6 +40,7 @@ defmodule AtmlPdf.Layout do
   alias AtmlPdf.Element.Document
   alias AtmlPdf.Element.Img
   alias AtmlPdf.Element.Row
+  alias AtmlPdf.TextWrap
 
   @typedoc "Resolved dimension — a plain point value."
   @type pt :: float()
@@ -81,6 +82,8 @@ defmodule AtmlPdf.Layout do
   """
   @spec resolve(Document.t()) :: {:ok, Document.t()} | {:error, String.t()}
   def resolve(%Document{} = doc) do
+    validate_font_size!(doc.font_size)
+
     font_ctx = %{
       font_family: doc.font_family,
       font_size: doc.font_size,
@@ -179,15 +182,38 @@ defmodule AtmlPdf.Layout do
 
   # Computes the natural (non-fill) height of a row.
   defp resolve_row_height(%Row{height: :fit} = row, parent_width, _parent_height, font_ctx) do
-    # fit: measure tallest col content; use a rough estimate based on content.
+    row_width = resolve_dim(row.width, parent_width, parent_width)
+    inner_width = max(0.0, row_width - row.padding_left - row.padding_right)
+
+    {widths, fill_count, used_width} =
+      Enum.reduce(row.children, {[], 0, 0.0}, fn
+        %Col{width: :fill}, {acc, fills, used} ->
+          {[:fill | acc], fills + 1, used}
+
+        %Col{} = col, {acc, fills, used} ->
+          width = resolve_col_width(col, inner_width, font_ctx)
+          width = clamp(width, col.min_width, col.max_width, inner_width)
+          {[width | acc], fills, used + width}
+      end)
+
+    fill_width =
+      if fill_count > 0, do: max(0.0, (inner_width - used_width) / fill_count), else: 0.0
+
+    widths =
+      row.children
+      |> Enum.zip(Enum.reverse(widths))
+      |> Enum.map(fn
+        {%Col{} = col, :fill} -> clamp(fill_width, col.min_width, col.max_width, inner_width)
+        {_col, width} -> width
+      end)
+
     col_height =
       row.children
-      |> Enum.map(fn col ->
-        col_content_height(col, parent_width, font_ctx)
-      end)
+      |> Enum.zip(widths)
+      |> Enum.map(fn {col, width} -> col_content_height(col, width, font_ctx) end)
       |> Enum.max(fn -> 0.0 end)
 
-    col_height
+    col_height + row.padding_top + row.padding_bottom
   end
 
   defp resolve_row_height(%Row{height: h} = _row, parent_width, parent_height, _font_ctx) do
@@ -198,20 +224,28 @@ defmodule AtmlPdf.Layout do
   defp col_content_height(%Col{} = col, parent_width, font_ctx) do
     resolved_font_ctx = merge_font_ctx(font_ctx, col)
     fs = resolved_font_ctx.font_size
+
+    font_name =
+      TextWrap.metric_font_name(resolved_font_ctx.font_family, resolved_font_ctx.font_weight)
+
+    measure = &TextWrap.width(font_name, fs, &1)
     line_h = fs * @line_height_ratio
 
     padding_v = col.padding_top + col.padding_bottom
+    inner_width = max(0.0, parent_width - col.padding_left - col.padding_right)
 
     content_h =
       col.children
       |> Enum.map(fn
         text when is_binary(text) ->
-          line_count = max(1, estimate_line_count(text, parent_width, fs))
+          line_count =
+            text |> String.trim() |> TextWrap.lines(inner_width, fs, measure) |> length()
+
           line_count * line_h
 
         %Row{} = nested_row ->
           # nested rows contribute their own fit height
-          resolve_row_height(nested_row, parent_width, 0.0, resolved_font_ctx)
+          resolve_row_height(nested_row, inner_width, 0.0, resolved_font_ctx)
 
         %Img{height: :fit} ->
           0.0
@@ -298,13 +332,11 @@ defmodule AtmlPdf.Layout do
   end
 
   # Estimates the natural content width of a col for :fit calculations.
-  # Mirrors the heuristic used in col_content_height/3 for the width axis.
+  # Measures the widest content line for fit-width columns.
   defp natural_col_width(%Col{} = col, font_ctx) do
     resolved_font_ctx = merge_font_ctx(font_ctx, col)
     fs = resolved_font_ctx.font_size
-    # Use 0.6 instead of 0.5 to account for character width variation
-    # and prevent clipping on right-aligned text with wider characters
-    avg_char_width = fs * 0.6
+    font_name = TextWrap.metric_font_name(resolved_font_ctx.font_family, resolved_font_ctx.font_weight)
 
     padding_h = col.padding_left + col.padding_right
 
@@ -314,9 +346,8 @@ defmodule AtmlPdf.Layout do
         text when is_binary(text) ->
           text
           |> String.split("\n")
-          |> Enum.map(fn line -> String.length(String.trim(line)) end)
-          |> Enum.max(fn -> 0 end)
-          |> Kernel.*(avg_char_width)
+          |> Enum.map(fn line -> TextWrap.width(font_name, fs, String.trim(line)) end)
+          |> Enum.max(fn -> 0.0 end)
 
         %Row{} = nested_row ->
           # A nested row's natural width is the sum of its cols' natural widths.
@@ -438,12 +469,18 @@ defmodule AtmlPdf.Layout do
   # Merges the inherited font context with any overrides declared on a Col.
   # Rows do not carry font fields, so they pass the context through unchanged.
   defp merge_font_ctx(ctx, %Col{} = col) do
+    font_size = col.font_size || ctx.font_size
+    validate_font_size!(font_size)
+
     %{
       font_family: col.font_family || ctx.font_family,
-      font_size: col.font_size || ctx.font_size,
+      font_size: font_size,
       font_weight: col.font_weight || ctx.font_weight
     }
   end
+
+  defp validate_font_size!(size) when is_number(size) and size > 0, do: :ok
+  defp validate_font_size!(_size), do: raise(ArgumentError, "font size must be greater than zero")
 
   # ---------------------------------------------------------------------------
   # Dimension utilities
@@ -491,27 +528,5 @@ defmodule AtmlPdf.Layout do
   defp apply_max(value, max_d, parent) do
     max_pt = resolve_dim(max_d, parent, parent)
     min(value, max_pt)
-  end
-
-  # ---------------------------------------------------------------------------
-  # Content measurement helpers
-  # ---------------------------------------------------------------------------
-
-  # Very rough estimate of how many lines `text` occupies in a col of `width` pt
-  # using `font_size` pt. This is a heuristic — a real implementation would use
-  # actual glyph metrics from the font.
-  defp estimate_line_count(text, width, font_size) do
-    # Average character width ≈ 0.5 × font_size for proportional fonts.
-    avg_char_width = font_size * 0.5
-    chars_per_line = if width > 0, do: floor(width / avg_char_width), else: 1
-    chars_per_line = max(chars_per_line, 1)
-
-    text
-    |> String.split("\n")
-    |> Enum.map(fn line ->
-      len = String.length(String.trim(line))
-      ceil(max(len, 1) / chars_per_line)
-    end)
-    |> Enum.sum()
   end
 end

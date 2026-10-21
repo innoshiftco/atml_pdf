@@ -32,6 +32,7 @@ defmodule AtmlPdf.PdfBackend.PdfAdapter do
   @impl true
   def set_font(pid, family, size, opts) do
     bold = Keyword.get(opts, :bold, false)
+    family = if family == "Times-Roman", do: "Times", else: family
     Pdf.set_font(pid, family, round(size), bold: bold)
     pid
   end
